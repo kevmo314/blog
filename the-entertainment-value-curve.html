@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Kevin's Blog</title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css">
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css">
+    <link rel="stylesheet" href="/style.css">
+    
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  </head>
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>The Entertainment Value Curve: An Incomplete Model</h1>
+    <em>September 21st, 2020</em>
+    <p>
+      Ravi Mehta discusses in <a href="https://www.reforge.com/blog/entertainment-value-curve">a recent post</a> why
+      TikTok has seen growth but Quibi hasn't. He explains that Quibi is missing social connection in its app and
+      concludes that Quibi can address this by making content more shareable and personal. As he summarizes,
+    </p>
+    <blockquote>
+      Quibi has been thinking about itself as a film studio. The company needs to think about itself as a social network.
+    </blockquote>
+    <p>
+      While the assertion that Quibi needs to think about itself as a social network is a valid conclusion, the approach
+      that Ravi takes in the article relies on a number of unsupported assumptions and statistical mistakes that result in an overly-narrow
+      conclusion. Quibi can opt to find success through thinking about itself as a social network, but what it ultimately
+      needs is a unique differentiator, not necessarily to become a social platform. If it chases social blindly following
+      Ravi's advice, it's likely it would end up as a YouTube clone.
+    </p>
+    <p>
+      Let's analyze where the reasoning breaks down and how we can form a more complete perspective.
+    </p>
+    <h2>Entertainment Value = Production Value + Social Value</h2>
+    <p>
+      The key focus of the post is this graph:
+    </p>
+    <img src="https://images.squarespace-cdn.com/content/v1/56f152a22fe131e76648aba3/1600230150065-OQTH59OJC0P7CRATM5PS/ke17ZwdGBToddI8pDm48kNvT88LknE-K9M4pGNO0Iqd7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UbeDbaZv1s3QfpIA4TYnL5Qao8BosUKjCVjCf8TKewJIH3bqxw7fF48mhrq5Ulr0Hg/evc?format=750w" />
+    <p>
+      However, looking closer at it, there are a number of fundamental problems.
+    </p>
+    <ol>
+      <li>It is not clear why social value is a dependent variable and why production value is an independent variable.
+          In fact, I would almost propose the opposite: that production value is more likely a function of social value.</li>
+      <li>It is not clear why the products must lie on the same equivalence curve, but failed products can leave this curve.</li>
+    </ol>
+    <p>
+      First, let's look at which variable is actually independent vs dependent. When products choose their strategy, they do
+      not choose production value and let social value "naturally" fall out. Indeed, the post even suggests the opposite: that
+      product strategy should actively choose social value as a focus. So we can imagine that perhaps a better solution is to flip
+      the axes:
+    </p>
+    <img src="/images/entertainment-value-1.png" />
+    <p>
+      But even this isn't correct, because non-user-generated content sites like Netflix can choose the quality of their content.
+      Indeed, sites like <a href="https://watchnebula.com/">Nebula</a> provide a Netflix level of social value, but slightly lower (non-Hollywood)
+      production value. While maybe the success of Nebula is an open question, its slightly lower production value would indicate that it's doomed
+      to fail according to the model. This conflict also suggests #2, which is that there's no reason to believe that successful products
+      lie on this curve at all.
+    </p>
+    <img src="/images/entertainment-value-2.png" />
+    <h2>So what's the fundamental problem here?</h2>
+    <p>
+      The problem is in the assumption of dependence. Pinning successful products to a fixed entertainment value implies that production value
+      and social value are tightly coupled, which leads to nebulous conclusions. Instead of causating them, let's correlate them with a third
+      input: investment of value. This investment may be monetary investment, time investment, or otherwise, but is fundamentally any type of
+      expenditure for the company to trade money or time value for social or production value.
+    </p>
+    <blockquote>
+      Social Value = f(Social Investment) <br/>
+      Production Value = g(Production Investment) <br/>
+      Entertainment Value = Social Value + Production Value <br/>
+      => Entertainment Value = f(Social Investment) + g(Production Investment)
+    </blockquote>
+    <p>
+      Now, social value and production value are functions of the amount we choose to invest into them. This is naturally intuitive.
+      I can buy a high quality production independent of who I am, and I can invest and expand my social network independent of the
+      content I create. Adding this layer of indirection is subtlely, but significantly different. Now, entertainment value is not fixed
+      (addressing #2) and there is no direct relationship between social value and production value (addressing #1).
+    </p>
+    <p>
+      The importance of this indirection step also surfaces in how the proposition is interpreted. The original post asserts that:
+    </p>
+    <blockquote>
+      Quibi made the mistake of thinking that "short" was the feature that people want, whereas "shareable and social" is what people want.
+    </blockquote>
+    <p>
+      which was true under the previous model, but the new model makes no such designation. Instead, the new model suggests that
+      entertainment value can be increased by investing in either social investment or production investment. The difference, and where
+      the original conclusion appears, is that in Quibi's case, <strong>social investment yields a greater return</strong>, or put in
+      economic terms, the marginal gains are likely higher for investment into social.
+    </p>
+    <h2>What's the impact on the conclusion?</h2>
+    <p>
+      When considering this approach, we can now look at the final conclusion.
+    </p>
+    <blockquote>
+      If I were in Quibi's shoes, a few questions come to mind for their present quandary:
+      <ol>
+        <li>How might we… make content more shareable?</li>
+        <li>How might we… make the app feel more alive?</li>
+        <li>How might we… make the audience part of the creative process?</li>
+        <li>How might we… spark conversation between the audience and the A-list community of storytellers, actors, and artists Quibi has assembled?</li>
+      </ol>
+    </blockquote>
+    <p>
+      Now, let's approach this from an investment return perspective. The above pieces of advice still align, but it's clear it's
+      not the only solution. Namely <strong>How might we... create higher production value content?</strong> is now a completely
+      valid strategy. And I think it could also work.
+    </p>
+    <p>
+      Stepping back, the reason this subtle distinction matters is a broader: Quibi's problem is not that it's not social enough.
+      Quibi's problem is that it isn't far enough away from the other points on that graph. Looking at the initial graph, disregarding the actual fit, Quibi
+      isn't located far below the curve in some death zone, Quibi is just too close to Netflix and Netflix completely dominates the high production value regime.
+    </p>
+    <img src="/images/entertainment-value-3.png" />
+    <p>
+      Ravi's post even hints at this conclusion.
+    </p>
+    <blockquote>
+      Quibi’s design is most similar to Netflix. But Netflix isn’t trying to be and doesn’t need to be “snackable”. Nobody wants Netflix with shorter episodes.
+    </blockquote>
+    <p>
+      But this is lost in the original thesis.
+    </p>
+    <blockquote>
+      The company faces a choice. Become more like Netflix or learn from TikTok.
+    </blockquote>
+    <p>
+      With the expanded model, we assert that becoming more like Netflix is also a death sentence. The company stands to gain much
+      by learning from TikTok, in other words its largest marginal entertainment value gain is through social investment,
+      but ultimately what is important is <strong>that it offers a unique value proposition</strong>
+      along the entertainment value curve. And this isn't too surprising. What the model shows is that Quibi is too close
+      to existing incumbents in the social value/production value space, so it doesn't provide a unique enough value
+      proposition.
+    </p>
+    <p>
+      So what Quibi needs is to innovate, find a unique differentiator, and <strong>distance itself from Netflix</strong>
+      beyond making videos shorter. It can learn from TikTok, but that's not the reason it might fail.
+    </p>
+    <!-- <h2>Linearity</h2>
+    <p>
+      I think even the above argument has a few unsavory assumptions. I mentioned with #3 that the original
+      <strong>entertainment value = social value + production value</strong> equation, it implies a linear correlation.
+      Conveniently, when approaching it from the investment standpoint this is no longer the case.
+    </p>
+    <p>
+      Considering <strong>Entertainment Value = f(Social Investment) + g(Production Investment)</strong>, if the functions
+      <em>f</em> and <em>g</em> are <a href="https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function">Cobb-Douglas utility functions</a>,
+      then turns out Entertainment Value is also Cobb-Douglas and moreover, can be interpreted as a proxy for consumer utility.
+    </p>
+    <p>
+      And turns out Cobb-Douglas both looks like the proposed shape and makes no assumption about a single curve, instead
+      it represents a family of curves.
+    </p>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/Cobbdouglas.jpg" />
+    <p>
+      So this approach is both more intuitive and represents the relationship in the original data better. As a final whammy,
+      Cobb-Douglas utility functions also correctly model decreasing marginal returns.
+    </p>
+    <p>
+      Thanks, economics.
+    </p> -->
+  </body>
+</html>
