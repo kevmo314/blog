@@ -212,8 +212,8 @@ let state = "idle, up";
 
 button.on("mouseenter", () => state = enter(state));
 button.on("mouseleave", () => state = enter(state));
-button.on("mousedown", () => state = press(state));
-button.on("mouseup", () => state = release(state));</pre
+document.on("mousedown", () => state = press(state));
+document.on("mouseup", () => state = release(state));</pre
     >
     <p>
       And we're done! <code>state</code> now tracks the state of the button
