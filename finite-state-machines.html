@@ -88,12 +88,19 @@ function open(state: ClosedState): OpenState {
       <code>variable</code>.
     </p>
     <pre>
-let door = "open";
+let door: DoorState = "open";
 
 door = close(door); // Close the door.
 door = open(door);  // Open it again.
 door = open(door);  // This won't compile, can't open an open door.</pre
     >
+    <p>
+      Try this on the
+      <a
+        href="https://www.typescriptlang.org/play?#code/C4TwDgpgBA8pB2BlYBDY0C8UBEB7B2A3AFCiRQDCANrgM4QAmyamOAxjfQ0caeNABFcuAE7N0ULHAhJUEgD6VOjcRBLEAZgFd4bYAEtc8KBzoQAFLTkQAXLASqAlHepmm1qAG9iUKCIjAWiLG2KZcPAC+vNq6BkZQ+DKW1i7K7izO9jKqXj5+AUEhifCRvFQBUAzCInZCojlYeATqVaKSJsrmrSKOhFAA9P1KZlDAABbQ3QB0xN3txV3Vvb6DWcb6wFAoAOYo+vAzc1gL3csDQwAqY-q0UADuRgDkm2y4ALZg+uUANCYo8M8EggtsZipVqlMgA"
+        >TypeScript playground</a
+      >.
+    </p>
     <h2>Adding complexity</h2>
     <p>
       The door example is simple, however. Practical finite state machines have
@@ -151,7 +158,7 @@ function enter(state: IdleUpState | IdleDownState | HeldOutsideState): ButtonSta
       wrong!
     </p>
     <pre>
-let button = "idle, up";
+let button: ButtonState = "idle, up";
 
 button = enter(button);  // This is ok.
 button = leave(button);  // This won't compile, but should.</pre
