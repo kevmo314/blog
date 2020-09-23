@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>
+      On the Unreasonable Effectiveness of Finite State Machines | Kevin's Blog
+    </title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>On the Unreasonable Effectiveness of Finite State Machines</h1>
+    <em>September 23rd, 2020</em>
+    <p>
+      Finite state machines are a powerful, but underutilized model for
+      computation. They are by far the most flexible and "perfect" abstraction
+      of how practical code behaves that I've run across, even moreso than my
+      love of everything-is-a-function. There are more flexible models, such as
+      Turing machines, but finite state machines strike a balance between being
+      over abstract and being grounded in application.
+    </p>
+    <p>
+      A finite state machine is a <strong>machine</strong> that transitions
+      between <strong>states</strong>, of which there are
+      <strong>finitely many</strong>.
+    </p>
+    <h2>A simple example</h2>
+    <p>
+      We'll take this example straight from Wikipedia. A door has two states:
+      <strong>open</strong> and <strong>closed</strong>. Transitioning between
+      them is simply <strong>opening</strong> a closed door or
+      <strong>closing</strong> an open door.
+    </p>
+    <img src="/images/finite-state-machines-1.png" />
+    <p>
+      With these states and transitions, the door can be modeled as a
+      <strong>finite state machine</strong>. In this example, we don't dictate,
+      what opens or closes the door, but we can also specify that too. For
+      example, in an automatically closing door the
+      <strong>closing</strong> action is simply labeled as an automatic
+      transition.
+    </p>
+    <img src="/images/finite-state-machines-2.png" />
+    <h2>Implementing a finite state machine</h2>
+    <p>
+      Now that we have a door, let's implement it. Some tutorials choose to use
+      a library like
+      <a href="https://github.com/davidkpiano/xstate">XState</a>, but I think
+      finite state machines can be implemented more elegantly without any
+      libraries. Moreover, bare-bones implementations get to the real power of
+      such models.
+    </p>
+    <p>
+      First, declare our states. Each state is represented by a
+      <code>type</code>.
+    </p>
+    <pre>
+type OpenState = "open";
+type ClosedState = "closed";
+
+type DoorState = OpenState | ClosedState;</pre
+    >
+    <p>
+      Second, declare our transitions. Each transition is represented by a
+      <code>function</code>.
+    </p>
+    <pre>
+function close(state: OpenState): ClosedState {
+  return "closed";
+}
+
+function open(state: ClosedState): OpenState {
+  return "open";
+}</pre
+    >
+    <p>
+      And that's it! To use this implementation, we can maintain our door as a
+      <code>variable</code>.
+    </p>
+    <pre>
+let door = "open";
+
+door = close(door); // Close the door.
+door = open(door);  // Open it again.
+door = open(door);  // This won't compile, can't open an open door.</pre
+    >
+    <h2>Adding complexity</h2>
+    <p>
+      The door example is simple, however. Practical finite state machines have
+      many more states, transitions, and behaviors. But these can still be
+      modeled with the above pattern. Let's consider an HTML button, which can
+      be modeled with the following diagram.
+    </p>
+    <img src="/images/finite-state-machines-3.png" />
+    <p>
+      Play around with the behavior
+      <a
+        href="https://web.stanford.edu/class/archive/cs/cs103/cs103.1142/button-fsm/"
+        >here</a
+      >, taking note of how the transitions work.
+    </p>
+    <p>Using the above framework, first declare our states.</p>
+    <pre>
+type IdleUpState = "idle, up";
+type IdleDownState = "idle, down";
+type HoverState = "hover";
+type HoverPressedState = "hover, pressed";
+type HeldOutsideState = "held outside";
+type PressedState = "pressed";
+type FireState = "fire!";
+
+type ButtonState = 
+  | IdleUpState
+  | IdleDownState
+  | HoverState
+  | HoverPressedState
+  | HeldOutsideState
+  | PressedState
+  | FireState;</pre
+    >
+    <p>
+      Then declare our transitions. I've omitted <code>leave</code>,
+      <code>press</code>, and <code>release</code> to keep this readable.
+    </p>
+    <pre>
+function enter(state: IdleUpState | IdleDownState | HeldOutsideState): ButtonState {
+  switch (state) {
+    case "idle, up":
+      return "hover";
+    case "idle, down":
+      return "hover, pressed";
+    case "held, outside":
+      return "pressed";
+  }
+}
+
+...</pre
+    >
+    <p>
+      Unfortunately, when we try using this implementation, something goes
+      wrong!
+    </p>
+    <pre>
+let button = "idle, up";
+
+button = enter(button);  // This is ok.
+button = leave(button);  // This won't compile, but should.</pre
+    >
+    <p>
+      What happened here? Sadly, the compiler doesn't know that
+      <code>button</code> is a valid state when it gets passed to
+      <code>leave</code>. There are three ways to solve this problem:
+    </p>
+    <ol>
+      <li>
+        Separate each transition into a different function for every input
+        state.
+      </li>
+      <li>
+        Loosen the input state requirements and don't transition if an invalid
+        state is passed.
+      </li>
+      <li>Improve the compiler.</li>
+    </ol>
+    <p>
+      #1 results in a lot of boilerplate but will work and #3 is outside the
+      scope of this post, so I'll focus on #2. In order to not transition if the
+      state is invalid, we adjust the transition so nothing happens if an
+      incorrect state is passed in.
+    </p>
+    <pre>
+function enter(state: ButtonState): ButtonState {
+  switch (state) {
+    case "idle, up":
+      return "hover";
+    case "idle, down":
+      return "hover, pressed";
+    case "held, outside":
+      return "pressed";
+    default:
+      return state;
+  }
+}</pre
+    >
+    <p>And with that simple change, our code now works.</p>
+    <pre>
+let button = "idle, up";
+
+button = enter(button);  // This is ok.
+button = leave(button);  // Also now works.</pre
+    >
+    <p>Lastly, we want to bind our transitions to events.</p>
+    <pre>
+let state = "idle, up";
+
+button.on("mouseenter", () => state = enter(state));
+button.on("mouseleave", () => state = enter(state));
+button.on("mousedown", () => state = press(state));
+button.on("mouseup", () => state = release(state));</pre
+    >
+    <p>
+      And we're done! <code>state</code> now tracks the state of the button
+      following the behavior of the state machine.
+    </p>
+    <h2>Why is this significant?</h2>
+    <p>
+      Another approach to solving #2 would be to use a higher order function
+      called a <code>reducer</code>. This would remove the need for default
+      statements, and might look something like this.
+    </p>
+    <pre>
+type EnterAction = "enter";
+type LeaveAction = "leave";
+type PressAction = "press";
+type ReleaseAction = "release";
+
+type Action =
+  | EnterAction
+  | LeaveAction
+  | PressAction
+  | ReleaseAction;
+
+function reducer(action: Action, state: ButtonState): ButtonState {
+  switch(action) {
+    case "enter": {
+      if (state === "idle, up" || state === "idle, down" || state === "held, outside") {
+        return enter(state);
+      }
+      return state;
+    }
+    ...
+  }
+}</pre
+    >
+    <p>
+      The other cases have been omitted for brevity, but if you're familiar with
+      the direction that frontend development has been going for the last few
+      years, this might seem
+      <a href="https://redux.js.org/">incredibly familiar</a>. This is no
+      surprise: finite state machines are an incredibly good model for
+      applications. UI development in general has captured a lot of this
+      intuition by decoupling state representation from rendering.
+    </p>
+    <p>
+      If we take a step back and look again at the button finite state machine
+      as an example, suppose we only look at the subset of states in the red
+      box.
+    </p>
+    <img src="/images/finite-state-machines-4.png" />
+    <p>
+      This is still a finite state machine! In fact, finite state machines are
+      composed <em>of finite state machines</em>. And when we look at the
+      implementation of <code>reducer</code>, it looks suspiciously similar to
+      the code for a transition, because it is, in fact, a transition.
+    </p>
+    <p>
+      So finite state machines are just composed of finite state machines. Take
+      this to an extreme and look at a computer. A
+      <a href="https://en.wikipedia.org/wiki/Von_Neumann_architecture"
+        >von Neumann</a
+      >
+      architected computer is composed of memory, which stores state, and a
+      processor, which performs transitions. Therefore,
+      <strong>a computer is nothing but a finite state machine.</strong>
+      Functions are nothing but transitions between memory states. And I think
+      this realization is why writing a finite state machine from scratch is so
+      insightful, because viewing code as nothing but state transitions offers a
+      way to dramatically reduce complexity and make code easier to understand.
+    </p>
+    <p>
+      Finite state machines aren't just good models for computing, they are an
+      <em>exceptionally good</em> model for practical software engineering. The
+      next time you run into a complex problem and it's hard to rack your head
+      around the complexity, try decomposing it into simple states and
+      transitions between them. As we've seen, finite state machines are
+      composed of finite state machines, so not only can you start by modeling a
+      small subset of states and build up from there, but also every problem is
+      guaranteed to be modelable.
+    </p>
+    <p>
+      After all, if it runs on a computer, it runs on a finite state machine, so
+      it has to be, fundamentally, a transition between states. That is, in my
+      opinion, unreasonably effective.
+    </p>
+  </body>
+</html>
