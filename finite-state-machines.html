@@ -217,8 +217,88 @@ button.on("mouseup", () => state = release(state));</pre
     >
     <p>
       And we're done! <code>state</code> now tracks the state of the button
-      following the behavior of the state machine.
+      following the behavior of the state machine. Try it below, view the source
+      with your browser.
     </p>
+    <noscript>Or not, needs javascript :(</noscript>
+    <div id="state-machine">
+      <img src="/images/finite-state-machines-3.png" />
+      <div><button id="trigger">Click me!</button></div>
+      <span id="state"></span>
+    </div>
+    <script type="text/javascript">
+      (function () {
+        function enter(state) {
+          switch (state) {
+            case "idle, up":
+              return "hover";
+            case "idle, down":
+              return "hover, pressed";
+            case "held, outside":
+              return "pressed";
+            default:
+              return state;
+          }
+        }
+
+        function leave(state) {
+          switch (state) {
+            case "hover":
+              return "idle, up";
+            case "hover, pressed":
+              return "idle, down";
+            case "pressed":
+              return "held outside";
+            default:
+              return state;
+          }
+        }
+
+        function press(state) {
+          switch (state) {
+            case "hover":
+              return "pressed";
+            case "idle, up":
+              return "idle, down";
+            default:
+              return state;
+          }
+        }
+
+        function release(state) {
+          switch (state) {
+            case "held outside":
+              return "idle, up";
+            case "idle, down":
+              return "idle, up";
+            case "hover, pressed":
+              return "hover";
+            case "pressed":
+              return "fire";
+            default:
+              return state;
+          }
+        }
+
+        var button = document.getElementById("trigger");
+        var state = "idle, up";
+
+        document.getElementById("state").textContent = state;
+
+        button.addEventListener("mouseenter", function () {
+          document.getElementById("state").textContent = state = enter(state);
+        });
+        button.addEventListener("mouseleave", function () {
+          document.getElementById("state").textContent = state = leave(state);
+        });
+        document.addEventListener("mousedown", function () {
+          document.getElementById("state").textContent = state = press(state);
+        });
+        document.addEventListener("mouseup", function () {
+          document.getElementById("state").textContent = state = release(state);
+        });
+      })();
+    </script>
     <h2>Why is this significant?</h2>
     <p>
       Another approach to solving #2 would be to use a higher order function
