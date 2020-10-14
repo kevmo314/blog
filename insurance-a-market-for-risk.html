@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>
+        Insurance: A Market for Risk | Kevin's Blog
+    </title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@kevmo314" />
+    <meta name="description"
+        content="Finite state machines are a powerful, but underutilized model for computation. They are the most flexible and perfect abstraction of how practical code behaves." />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+</head>
+
+<body>
+    <a href="/">Back to the blog</a>
+    <h1>Insurance: A Market for Risk</h1>
+    <em>October 13th, 2020</em>
+    <p>
+        Let's play a game. Send 0.1 ETH (~$37) to the following address and you'll have a 50% chance of getting 0.2 ETH back.
+    </p>
+    <pre>
+        TODO: Address.
+    </pre>
+    <h2>What is loss aversion?</h2>
+    <p>
+        Most people won't play, even though the expected value of playing is zero (minus transaction fees). This happens
+        because humans are <strong>loss averse</strong>: we tend to prefer avoiding losses to equivalent gains. <a
+        href="https://www.pnas.org/content/107/8/3788">Studies have found</a> that the amygdala may mediate loss aversion by triggering a negative emotional response for losses,
+        but not the equivalent magnitude for gains. Our biological response causes us to feel losses about <a href="https://www.uzh.ch/cmsssl/suz/dam/jcr:00000000-64a0-5b1c-0000-00003b7ec704/10.05-kahneman-tversky-79.pdf">2-3 times</a>
+        worse than the equivalent gains.
+    </p>
+    <p>
+        To model the preference to avoid losses, our utility curve follows
+    </p>
+
+    <p>
+        Specifically, we value losses much more negatively than the equivalent gain and also that the marginal value of gains or losses decreases as the magnitude increases.
+        This asymmetry is known as <strong>loss aversion.</strong>
+    </p>
+    <h2>Rationality of loss aversion</h2>
+    <p>
+        Despite loss aversion being tied to core human behavior, most economists do not consider it to be rational. Consider a business's utility curve for a gain or a loss,
+        it is typically linear.
+    </p>
+    <p>
+        Unsurprisingly, $1 is worth $1 and $100 is worth $100. Saving $100 is functionally equivalent to making $100. What results here is an asymmetry not just between losses and gains
+        but also between rational behavior and human behavior. This suggests that most individuals operate inefficiently.
+    </p>
+    <h2>Insurance as a mitigation strategy</h2>
+    <p>
+        A market opportunity exists to exploit this difference. Consider the following two choices.
+    </p>
+    <ol>
+        <li>Lose $550 with 100% certainty.</li>
+        <li>Lose $1000 with 50% certainty or $0 with 50% certainty.</li>
+    </ol>
+    <p>
+        For the same loss aversion reason, many players will choose option 1: the idea of losing $1000 is harder to stomach than just incurring a $550 loss. Perfectly rational actors, however,
+        will choose option 2 because its expected loss is $500. In this case, the $50 difference is known as the <strong>risk premium.</strong>
+    </p>
+    <p>
+        But we often can't choose our environments, and reality doesn't go according to plan. Sometimes, I'm forced to take option 2, for example when getting a medical bill. Insurance companies
+        can aggregate risk across consumers and sell me a health insurance plan that allows me to pay a premium and choose option 1, mitigating the risk that I'll get hit with the $1000 bill.
+    </p>
+    <p>
+        Considering the utility curve, this works because of the difference in magnitude between
+    </p>
+    <p>
+        Extrapolating this observation, industries are founded on market arbitrage. When costs are lower than profits, monetary or otherwise,
+        an opportunity is available to convert that to a monetary gain.
+    </p>
+    <h2>Alternative mitigation strategies</h2>
+    <p>
+        Insurance isn't the only way to align these curves. <a href="https://web.ics.purdue.edu/~gill53/AER12.pdf">A recent study</a> posits that competitive environments tend to create
+        more loss aversion and 
+    </p>
+    <p>
+        Another approach involves <a href="https://www.nber.org/papers/w22605.pdf">reducing the amount of information that is exposed.</a> Having less information reduces the fear of
+        making a wrong decision, lessening the impact of misaligned risk profiles.
+    </p>
+    <h2>What does that mean for me?</h2>
+    <p>
+        On a personal level, behavioral economics has taught me something unique. When I'm afraid of something, I try to figure out why I'm afraid of it and identify if it's rational.
+        Usually, the true payoff curve is not aligned with what I'm afraid of. Sometimes, that helps make it easier to take risks. In other words, <strong>failing is usually not as bad as it seems.</strong>
+    </p>
+    <p>
+        Put simply, I try to take some risks for the sake of taking them. Being a bit riskier usually will mean I'm closer to risk-neutral than risk-taking after factoring in my biases.
+        That's how I capitalize on my personal risk arbitrage.
+    </p>
+    <hr />
+    <p>
+        Comment on this post on
+        <a href="https://twitter.com/kevmo314/status/1308777691655663616">Twitter</a>
+    </p>
+</body>
+</html>
