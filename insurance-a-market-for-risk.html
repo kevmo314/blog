@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Insurance: A Market for Risk | Kevin's Blog</title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@kevmo314" />
+    <meta
+      name="description"
+      content="Finite state machines are a powerful, but underutilized model for computation. They are the most flexible and perfect abstraction of how practical code behaves."
+    />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>Insurance: A Market for Risk</h1>
+    <em>October 13th, 2020</em>
+    <p style="font-style: italic">
+      Note: I'm not a professional behavioral economist. If you find any
+      mistakes, insights, or suggestions, please
+      <a href="mailto:kevmo314@gmail.com">email me</a>. I'd love to learn from
+      you!
+    </p>
+    <h2>What is loss aversion?</h2>
+    <p>
+      Let's play a game. Send exactly 0.1 ETH (~$37 today) to the following
+      address and you'll have a 50% chance of getting 0.2 ETH back.
+    </p>
+    <pre>0x3730B5054AC8DDdbC672a831f7ff2f2ba501038b</pre>
+    <p>This is a manual process, but I will send winners 0.2 ETH within 24h.</p>
+    <p>
+      Most people won't play even though the expected value of playing is zero
+      (minus transaction fees). Because humans are naturally
+      <strong>loss averse</strong>: we tend to prefer avoiding losses to
+      equivalent gains. If you don't want to play because you don't trust me,
+      funnily enough, this is also characterized by loss aversion. When we incur
+      losses,
+      <a
+        href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2840433/pdf/pnas.200910230.pdf"
+        >our amygdala triggers a negative emotional response</a
+      >, but the equivalent positive response doesn't happen for gains.
+      Specifically, our biological response causes us to feel losses around
+      <a
+        href="https://www.uzh.ch/cmsssl/suz/dam/jcr:00000000-64a0-5b1c-0000-00003b7ec704/10.05-kahneman-tversky-79.pdf"
+        >2-3 times</a
+      >
+      worse than the equivalent gains.
+    </p>
+    <p>
+      To model the preference to avoid losses, our utility curve, the intrinsic
+      value of a specific loss/gain, follows
+    </p>
+    <img src="/images/insurance-a-market-for-risk-1.png" />
+    <p>
+      Specifically, we value <span style="color: red">losses</span> much more
+      negatively than the equivalent <span style="color: green">gain</span>.
+      This asymmetry is known as <strong>loss aversion.</strong> Someone who is
+      not loss averse has a utility curve that is symmetric with a red and green
+      line approximately the same size.
+    </p>
+    <img src="/images/insurance-a-market-for-risk-2.png" />
+    <h2>Insurance as a mitigation strategy</h2>
+    <p>
+      Despite loss aversion being tied to core human behavior, most economists
+      do not consider it to be rational.
+    </p>
+    <p>
+      Under rational behavior $1 is worth $1 and $100 is worth $100. Saving $100
+      is functionally equivalent to making $100. Corporations operate under this
+      strategy, observing that cost savings are equivalent to gained profit.
+    </p>
+    <p>
+      The difference between a rational actor and a human behavior suggests that
+      there is a market opportunity available. Consider a game with the
+      following two choices.
+    </p>
+    <ol>
+      <li>Lose $550 with 100% certainty.</li>
+      <li>Lose $1000 with 50% certainty or $0 with 50% certainty.</li>
+    </ol>
+    <p>
+      For the same loss aversion reason, many players will choose option 1: the
+      idea of losing $1000 is harder to stomach than just incurring a $550 loss.
+      Perfectly rational actors, however, will choose option 2 because its
+      expected loss is $500.
+    </p>
+    <p>This $50 difference is known as the <strong>risk premium.</strong></p>
+    <p>
+      Taking calculated risks can look scary because the apparent expected
+      payoff appears far more negative than the true expected payoff. Think
+      about the prospect of quitting your job, asking your crush out, or going
+      skydiving. In all of these cases, odds are that everything will work out,
+      but the perceived fear can be high.
+    </p>
+    <p>
+      But in all these cases, we don't have the luxury of choosing the outcome
+      and reality doesn't always go according to plan.
+    </p>
+    <img src="/images/insurance-a-market-for-risk-3.png" />
+    <blockquote>
+      Whatever comes, we will help you quickly and easily.
+      <strong>mobiliar.ch</strong>
+    </blockquote>
+    <p>
+      So, reality might stick us with choice 2: a 50% chance of $1000 loss and a
+      50% chance of $0 loss.
+    </p>
+    <p>
+      Now, an insurance company comes and observes that the true expected value
+      is different from the perceived expected value and that it can collect
+      this risk premium by selling an <em>insurance product</em>.
+    </p>
+    <p>
+      By aggregating over all consumers, as long as the insurance company is
+      able to estimate the true expected value, it can sell a lower-risk,
+      guaranteed-loss product at above the perceived expected value and profit
+      from the risk premium. So that's where insurance comes from: it insures me
+      against unrecoverable loss by removing uncertainty.
+    </p>
+    <img src="/images/insurance-a-market-for-risk-4.png" />
+    <p>
+      Consumers are willing to buy this product because they still stand to gain
+      between the perceived expected value and the insurance premium.
+      Specifically, the space between the
+      <span style="color: blue">insurance premium</span> and the
+      <span style="color: grey">true expected value</span> is the insurance
+      company's profit and the space between the
+      <span style="color: red">perceived expected value</span> and the
+      <span style="color: blue">insurance premium</span> is the consumer's
+      profit.
+    </p>
+    <p>
+      The insurance companies are effectively
+      <strong>trading risk as an product.</strong>
+    </p>
+    <h2>Alternative mitigation strategies</h2>
+    <p>
+      Interestingly, not every loss-aversion-affected game can be traded via
+      risk reduction. When the option to not play is available, games with
+      negative perceived expected value cannot be insured against. Take, for
+      example, the double-or-nothing game offered in the introduction. The
+      perceived expected value of playing the game is negative and the true
+      expected value is zero. Because you are offered the option to also not
+      play, however, any insurance policy that can arbitrage this difference
+      would be dominated by the option to not play.
+    </p>
+    <p>
+      Therefore, artificial insurance policies also compete with certain natural
+      mitigation strategies. Additional, non-market-taking solutions include
+      <a href="https://web.ics.purdue.edu/~gill53/AER12.pdf"
+        >putting agents in non-competitive environments</a
+      >
+      or
+      <a href="https://www.nber.org/papers/w22605.pdf"
+        >reducing the amount of information that is exposed</a
+      >. There are many other strategies and this area of behavioral economics
+      is still actively researched, but the key takeaway is that converting
+      these arbitrage opportunities to other forms of value (eg money) is not
+      always as easy as selling an insurance product.
+    </p>
+    <p>
+      Of particular interest to me is how these relate to aligning agents'
+      incentives, which I will talk about in a part two not-yet-published blog
+      post. As a sneak peak, I view a scheme that adjusting the risk profile
+      curve to match the linear curve of a business as a form of
+      <strong>incentive alignment</strong>.
+    </p>
+    <h2>What does that mean for me?</h2>
+    <p>
+      On a personal level, thie existence of insurance and the loss aversion
+      asymmetry has taught me that when I'm afraid of something, odds are that
+      it's not rational. Usually, the true payoff curve is not aligned with what
+      I'm afraid of. Sometimes, that helps make it easier to take risks but in
+      other words,
+      <strong>failing is not always as bad as it seems.</strong>
+    </p>
+    <p>
+      Put simply, I try to take some risks for the sake of taking them. Being a
+      bit riskier usually will mean I'm closer to risk-neutral than risk-taking
+      after factoring in my biases. That's how I capitalize on my personal risk
+      arbitrage and collect my own risk premium without insurance.
+    </p>
+    <hr />
+    <p>
+      Comment on this post on
+      <a href="https://twitter.com/kevmo314/status/1308777691655663616"
+        >Twitter</a
+      >
+    </p>
+  </body>
+</html>
