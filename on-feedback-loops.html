@@ -38,30 +38,14 @@
     </p>
     <p>
       Our approach to reliably and repeatedly creating positive feedback loops
-      involves looking at a more microeconomic level with individual incentives,
-      or in more general economic terms:
-      <strong>incentive alignment.</strong> We find our strongest alignment not
-      by direct incentives, but rather by applying
+      involves looking at a more microeconomic level with
+      <strong>individual incentive alignment.</strong> We find our strongest
+      alignment not by direct incentives such as taxes and subsidies, but rather
+      by applying
       <a href="https://www.nobelprize.org/uploads/2018/01/thaler-lecture.pdf"
-        >nudges</a
+        >structural nudges</a
       >
       to encourage the equilibria we want to reach.
-    </p>
-    <p>
-      More concretely, we differentiate our strategy by focusing on individual
-      motivations instead of the actions we want to encourage. Instead of just
-      considering "why might a viewer want to view content?", we ask "why might
-      a viewer want to view content given that the content creator is seeking
-      new friends?". For us, it's important to
-      <strong>pin the initial motivation</strong> and build the product around
-      that motivation and user journey instead of individual components of the
-      feedback loop.
-    </p>
-    <p>
-      When I was at Google, our growth strategies consisted of focusing on
-      <strong>critical user journeys.</strong> I see aligning incentives to be
-      an iteration of that strategy, focusing on user-defined motivations
-      instead of product-defined journeys.
     </p>
     <h2>1. Choose a motivation</h2>
     <p>
@@ -93,159 +77,41 @@
       When this feature first launched, it was buried behind a tooltip when you
       hovered over an icon. Turns out, very few users actually discovered this
       tooltip, which became obvious when looking at someone use the website.
-    </p>
-    <p>
       Verifying that motivations are satisfied guarantees that engaged users
       will guide the product development flow instead of guessing.
     </p>
-
+    <h2>Why we think this matters</h2>
     <p>
-      To give an example of how a feedback loop can be interpreted from a
-      microeconomic incentive point of view, let's take one of the engagement
-      loops that Andrew exemplifies.
-    </p>
-    <img src="/images/positive-feedback-loops-and-incentive-alignment-1.jpg" />
-    <p>
-      The incentives in this loop lie where the grey arrows are. From each
-      node's perspective,
-      <strong>what are the motivations for the next action?</strong> I've
-      annotated one set of possible justifications below.
-    </p>
-    <img src="/images/positive-feedback-loops-and-incentive-alignment-2.png" />
-    <p>
-      The benefit of considering the incentives is it allows us to concretely
-      identify other reengagement strategies to keep this cycle going. For
-      example, in addition to
-      <span style="color: red">publishing new content</span>, creators may have
-      more internal motivations such as
-    </p>
-    <ul>
-      <li>Finding new connections interested in the same topics</li>
-      <li>Gaining a following to build their public image</li>
-      <li>Sharing content or raising awareness to their friends</li>
-      <li>Taking notes or storing private information</li>
-    </ul>
-    <p>
-      Based on these motivations, we characterize and identify which ones we
-      want to encourage. Maybe now you're wondering, isn't thinking through
-      these critical user journeys obvious? Most products go through this
-      lifecycle: identify the features and paths they want to support and
-      reinforce.
+      We differentiate our strategy by focusing on individual motivations
+      instead of the actions we want to encourage. Instead of just considering
+      "why might a viewer want to view content?", we ask "why might a viewer
+      want to view content given that the content creator is seeking new
+      friends?". For us, it's important to
+      <strong>pin the initial motivation</strong> and build the product around
+      that motivation and user journey instead of individual components of the
+      feedback loop.
     </p>
     <p>
-      Where our approach stands out, however, is in considering second and
-      higher order effects. For example, when content is viewed by other users,
-      it's not sufficient to try and maximize
-      <code>P(viewers engage)</code> because there is not enough information to
-      maximize this probability, which can lead to misaligned incentives.
-    </p>
-    <h2>Balancing misaligned incentives</h2>
-    <p>
-      With the Instagram example, suppose the motivation for creators to publish
-      new content is that they are being paid per post. If we are to simply
-      maximize <code>P(viewers engage)</code>, we may discover that viewers
-      don't want to see that content. We might try different reengagement
-      strategies such as paying viewers to view content. And while this might
-      work, we've fueled ourselves into a negative feedback loop of paid growth.
+      When I was at Google, our growth strategies consisted of focusing on
+      <strong>critical user journeys.</strong> I see aligning incentives to be
+      an iteration of that strategy, focusing on user-defined motivations
+      instead of product-defined journeys.
     </p>
     <p>
-      Instead, we consider
-      <code>P(viewers engage | motivation)</code> for each motivation. That is,
-      seek to optimize the feedback loop <em>for a specific user journey</em>.
-      Paying content creators or involving them in revenue share may attract
-      content, but it does nothing to accomplish the underlying desires of the
-      user. This leads to misaligned incentives, which result in a substantial
-      decrease in quality.
-    </p>
-    <blockquote>
-      Startups are so hard that you can't be pointed off to the side and hope to
-      succeed. You have to know that growth is what you're after. --Paul Graham,
-      <a href="http://www.paulgraham.com/growth.html"
-        >http://www.paulgraham.com/growth.html</a
-      >
-    </blockquote>
-    <p>
-      Aligned and misaligned incentives also show up in games. At the 2016 Game
-      Developers Conference, Luke Muscat talks about his game that he tested at
-      Halfbrick Studios. The game was structured to have a very tight feedback
-      loop, but the game's incentives were malaligned with high quality user
-      engagement. I highly recommend the hour-long talk, but also try viewing
-      each conclusion he draws through the lens of incentives.
-    </p>
-    <iframe
-      width="560"
-      height="315"
-      src="https://www.youtube.com/embed/t9WMNuyjm4w"
-      frameborder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      allowfullscreen
-    ></iframe>
-    <p>
-      The fundamental problem that Luke ran into in his game is that his game
-      rewarded more time investment, but not high quality user behavior or
-      broader user engagement. Invested players had an unintentional incentive
-      to exploit non-players, not to draw them in and expand the game. In other
-      words, <code>P(continue playing)</code> may have been high, but
-      <code>P(continue playing | improve relationships)</code>
-      was low. If the latter were optimized instead, the game would have been
-      more sustainable.
+      Incentives and emotions are core to human behavior. Arbitrary user
+      journeys are not. Tying a user journey to addressing a core incentive,
+      such as feeling the need for connection and socialization, grounds our
+      user journey in a repeatable, exogenous trigger instead of a product-level
+      decision.
     </p>
     <p>
-      I've seen this effect personally as well. When running UChicago's
-      <a
-        href="https://www.facebook.com/notes/kevin-wang/a-brief-history-of-zombies-at-uchicago/10156595334907727/"
-        >Humans vs Zombies</a
-      >, we noticed that increasing the depth of the game to incentivize
-      engagement actually decreased the quality of the game for the same reason:
-      players became too incentivized towards their own success and began to
-      develop it at the expense of others.
-    </p>
-    <h2>Economic formalism</h2>
-    <p>
-      In order to turn this formalism into actionable insight, I'll first take a
-      step back and abstract once further. Let's take a look at a simple
-      action/motivation loop. Suppose we have actions
-      <code>A<sub>1</sub>,A<sub>2</sub>,A<sub>3</sub></code> and motivations
-      <code>M<sub>1</sub>,M<sub>2</sub>,M<sub>3</sub></code
-      >.
-    </p>
-    <p>
-      Observe that choosing to maximize <code>P(A<sub>1</sub>)</code>,
-      <code>P(A<sub>2</sub>|M<sub>1</sub>)</code>,
-      <code>P(A<sub>3</sub>|M<sub>1</sub>,M<sub>2</sub>)</code> actually
-      indirectly maximizes
-      <code>P(A<sub>1</sub>,A<sub>2</sub>,A<sub>3</sub>)</code> by chain rule
-      (with a bit of hand waving). The interpretation here is that directly
-      maximizing the total feedback loop results in potentially discovering a
-      local maximum that can catalyze growth but maximizing the individual legs
-      results in a more stable Nash equilibrium. In other words, finding a
-      stable, maximal Nash equilibrium guarantees that the incentives are
-      aligned. Maximal is defined by the product, but usually boils down to
-      mutually beneficial.
-    </p>
-    <p>
-      Considering the desire to find a stable Nash equilibrium, we now can turn
-      our heads towards Bayesian games. To keep this post simple, the approach
-      we wish to take is to nudge the threshold probability by adjusting an
-      agent's beliefs. In Instagram terms, Instagram seeks to nudge the user
-      towards believing that posting can further their connections.
-    </p>
-    <img src="/images/positive-feedback-loops-and-incentive-alignment-3.png" />
-    <p>
-      Which is exactly what happens with like notifications, a prominent post
-      button, and other users' avatars. Instagram is made to feel like people
-      care about the content you create, which in turn nudges you to believe
-      that it will satisfy an intrinsic motivation for creating content. In
-      contrast, there's no direct way to engage with content on the home screen
-      and discovering external content is a single, lonely search button.
-    </p>
-    <h2>Does it work?</h2>
-    <p>
-      Huddle is still a young startup, so this approach has yet to be proven.
-      But it's the lens we view everything through and drives our decision
-      making all across the company, from product to hiring. What are everyone's
-      exogenous incentives? Can we find a positive way to nudge that incentive
-      to align with ours? We'll find out soon.
+      Put simply, we change our mindset from "does this feature help users find
+      the content they want?" to "does this features help users address the
+      reason they came to the app?", which we believe both strengthens the
+      feedback loop and simplifies the development. Huddle is still a young
+      startup, so this approach has yet to be proven. But it's the lens we view
+      everything through and drives our decision making all across the company,
+      from product to hiring.
     </p>
     <p>
       Think we're on to something?
