@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Time-Invariant Finite State Machines | Kevin's Blog</title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@kevmo314" />
+    <meta
+      name="description"
+      content="When we incur losses, our amygdala triggers a negative emotional response, but the equivalent positive response doesn't happen for gains. Our biological response causes us to feel losses around 2-3 times worse than the equivalent gains and insurance companies work by trading on that difference."
+    />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>Time-Invariant Finite State Machines</h1>
+    <em>December 13th, 2020</em>
+    <p>
+      A <a href="https://www.blogzhang.com/">friend</a> posited a question about
+      my previous
+      <a href="/finite-state-machines.html">finite state machines</a> post:
+      <strong
+        >how do we model scheduled state transitions in a finite state
+        machine?</strong
+      >
+      For example, with the door finite state machine, the door might close
+      automatically after
+      <em>t</em> seconds. Similarly, the button finite state machine might
+      timeout if the user holds the button down for too long. For a practical
+      use case that we'll take a look at, double click detection can be modeled
+      this way too.
+    </p>
+    <h2>Scheduling the transition</h2>
+    <p>
+      Let's take the door example as we saw earlier, except modify it to
+      automatically transition from <strong>open</strong> to
+      <strong>closed</strong> after two seconds if it hasn't been closed.
+    </p>
+    <img src="/images/time-invariant-finite-state-machines-1.png" />
+    <p>
+      The original solution, with no auto-closing, has been copied below for
+      reference.
+    </p>
+    <pre>
+type OpenState = "open";
+type ClosedState = "closed";
+
+type DoorState = OpenState | ClosedState;
+
+function close(state: OpenState): ClosedState {
+  return "closed";
+}
+
+function open(state: ClosedState): OpenState {
+  return "open";
+}</pre
+    >
+    <p>
+      One approach to implementing an automatic door closing is to simply
+      schedule a close action with <code>setTimeout()</code>. This works, but is
+      both wildly unsatisfying and has some hidden complexity. Consider, for
+      example, when the door is manually closed and then reopened. The existing
+      timeout must be cancelled and rescheduled, otherwise the door may close
+      prematurely. This might be implemented as such:
+    </p>
+    <pre>
+let door: DoorState = "closed";
+
+door = open(door);
+let timeout = setTimeout(() => door = close(door), 2000);
+door = close(door);
+clearTimeout(timeout);
+door = open(door);
+timeout = setTimeout(() => door = close(door), 2000);</pre
+    >
+    <p>
+      Perhaps some of that logic can be abstracted to common functions, but as I
+      mentioned, <em>wildly unsatisfying</em>. There is a better solution, which
+      the title of this post hints at: making the finite state machine
+      time-invariant.
+    </p>
+    <h2>What is time, even?</h2>
+    <p>
+      To make the finite state machine time-invariant, we incorporate the
+      <strong>time</strong> that the last event occurred into the state. Then,
+      in order to determine if the door is open or not, instead of looking
+      directly at the state, we compute the output state based on the door state
+      and the time of the last event.
+    </p>
+    <p>
+      If that's a bit confusing, don't worry. It's a bit simpler to understand
+      with code. First, we adjust our <code>OpenState</code> to include the time
+      that it was opened at. The <code>ClosedState</code> doesn't need to change
+      because the door doesn't auto-open, but we adjust the signature a bit to
+      keep things consistent.
+    </p>
+    <pre>
+type OpenState = { type: "open", at: Date };
+type ClosedState = { type: "closed" };</pre
+    >
+    <p>
+      In these signatures, <code>type</code> is a
+      <strong>string constant</strong>.
+    </p>
+    <p>Our <code>DoorState</code> remains unchanged</p>
+    <pre>type DoorState = OpenState | ClosedState;</pre>
+    <p>
+      The transition for <code>close</code> doesn't change, but now
+      <code>open</code> must include the date to correctly satisfy the type
+      definition.
+    </p>
+    <pre>
+function close(state: OpenState): ClosedState {
+  return { type: "closed" };
+}
+
+function open(state: ClosedState): OpenState {
+  return { type: "open", at: new Date() };
+}</pre
+    >
+    <p>
+      Now, in order to determine if the door is open or closed, we need a view
+      function.
+    </p>
+    <pre>
+function view(state: DoorState): "open" | "closed" {
+  switch (state.type) {
+    case "closed":
+      return "closed";
+    case "open":
+      const now = new Date();
+      if (now.getTime() - state.at.getTime() > 2 * 1000) {
+        // The door has been opened for more then 2s, so it's really closed.
+        return "closed";
+      } else {
+        return "open";
+      }
+  }
+}</pre
+    >
+    <p>
+      And now, we can properly open our door and expect that it transitions out
+      of being opened after two seconds.
+    </p>
+    <pre>
+let door: DoorState = { type: "closed" };
+
+door = open(door);  // Open the door.
+
+console.log(view(door));                          // Prints open.
+setTimeout(() => console.log(view(door)), 2100);  // Prints closed, 2100 to avoid a race.</pre
+    >
+    <p>
+      Try this on the
+      <a
+        href="https://www.typescriptlang.org/play?#code/C4TwDgpgBA8pB2BlYBDY0C8UDeVSQC4oAiAewWIBoo0iARNaAXwG4AofaAYQBtSBnCABNkjKFlycixAMZ9BQ4lFZsO4aHVKkATqPTjYCPdAA+UXgOHH2bAGYBXeDOABLUvChzLACn6p0RHAQSP4QAJREFgrGOGxQUNoQwPbaHpLq0l4KSipMqg5Oru5Q5MG+oZHyVqERhsEx2HEJSSlpeBkkpfBUNMBE8BAA7lAM6N5hyux5do7Obh4Abi5D5Yz0Wro10l1KZrJVirHx-IMuwDIAFlCr6AB0nBON8fEyKIIkWcLEBE3PzcmpD4HYjsP6vd5kCg-P4vdx+KDwUjDLADYajCDjUEwly2a6Iwa3ADmSQAKi4ALYYiYAWigfkYtzQRNJFKpUAAfFAAExQABUUAAjAAGEWPX4wgD0EqgJIu0CEGygFzeUAARhBgiUEMIoLYdFByTpoMA5R4ufxqPxSFAzgByfjNFA8HggTwHW7iv6JAEefaWRRYv5MKAQHjvJ4w+Le1qdCiB555eJ5aY8JJQBU6dY6GISdqEIH+nI2DPaAxdbwlsIseJSuoeE3yjYetgyOGkVO3PiE7xLFaVquRwdDyXSgAK2hc8GADq6HsEwDJlNI9mA3nG4k5rfgVo7XZ7y0GFY2YTC1C5wqFA6gtfHk+nbv9tyAA"
+        >TypeScript playground</a
+      >.
+    </p>
+    <h2>Lenses: a tinted view of the state</h2>
+    <p>
+      Perhaps you'd like to tell me now: Kevin, this is cheating! The state
+      isn't actually transitioned!
+    </p>
+    <p>
+      It's true that the underlying state isn't actually transitioned, but the
+      key insight here is that the output of <code>view</code> is uniquely
+      determined by the input state (<code>door</code>) and current time. In
+      fact, all modelable systems will behave like this. Unless another
+      transition occurs, any closed machine that follows like the one above can
+      be
+      <a href="https://en.wikipedia.org/wiki/Deterministic_system"
+        >deterministically modeled</a
+      >
+      by its initial state and time.
+    </p>
+    <p>
+      This is a pretty nice property, as it suggests that as long as we
+      incorporate the time of the event into our state, we can project our state
+      however we like. Even as the finite state machine gets more complex, as
+      long as we do not introduce any non-determinism, the output state can
+      <em>always</em> be calculated as a function of the last known state. In
+      fact, because computer random number generators are often not truly
+      random, we can even model "randomness" too, to a degree.
+    </p>
+    <p>
+      The best reference to this approach of using a <code>view</code> function
+      that I could find is the functional
+      <a
+        href="https://en.wikibooks.org/wiki/Haskell/Lenses_and_functional_references"
+        >lens</a
+      >. The <code>view</code> function above only implements a getter, however
+      it's also possible to implement a setter. I don't think it matches
+      exactly, but I think the name works: the lens is a view of the state. In
+      this case, the view that we actually want.
+    </p>
+    <h2>Extending beyond time</h2>
+    <p>
+      Considering the above approach more deeply, we can also extend further by
+      lifting any details that might result in "scheduled transitions" into the
+      current state. For example, if the door must automatically close and open
+      repeatedly but manually opening or closing it resets the process, we can
+      also model this by incorporating the time into the closed state.
+    </p>
+    <p>
+      Here's an exercise I'll leave to the reader: suppose the door will
+      auto-close after two seconds unless the door was opened within one second
+      of the last close. How might we model this scenario without actually
+      invoking the transition?
+    </p>
+    <p>
+      Take a stab at it on the
+      <a
+        href="https://www.typescriptlang.org/play?#code/C4TwDgpgBA8pB2BlYBDY0C8UDeVSQC4oAiAewWIBoo0iARNaAXwG4AofaAYQBtSBnCABNkjKFlycixAMZ9BQ4lFZsO4aHVKkATqPTjYCPdAA+UXgOHH2bAGYBXeDOABLUvChzLACn6p09Fq6-hAAlIE6xjhsUFDaEMD22h6S6tJeCkoqTKoOTq7uUOQQ8L4hEcGM4VCakSHRsfGJyTh4aSTF8FQ0wETwEADuNYzeocrsOXaOzm4eAG4ug2WMFcbVZBRQZrLywkrYMVAA9EdQACowdDBEAJIAtmA8EHclwHgAFi78AHRsk09vIRBVb1CRtQgdCjUWhQfpDBjoUbjVQydz8UhPb58ADm3gWSyBOlCoRYsTJ5IplMpJygAAVtC54MB+EUEL9BMAzi4XqR7MBvEiMAA+TxojEQLGkXH4gbeQnaYnUABMAEYAAxqkmxGn0xnMzy7IS-Ngcrk8vkCsbCqDygydOVBULUAAsGs1pKpNLgJQ+0FtaDwBmdJoSZogvP5gpFqPg6MxOLxi1l8sVUGd6vd2tOuqZLM67ND3PDFqjotj4sl0qTDqJTqgADYM1rjtmGbmDZYjapTUWI5bxCLbVh7SnqPWAKwa5vU07ejzAd5+oI9QNYevfcchzm9ktW6Ni+NSxMEx11+v1qcenVt-X5rdhvulmNxiUJmU1hV1gAcF8zLbpN55myQA"
+        >TypeScript playground</a
+      >, some example test cases are provided.
+    </p>
+    <hr />
+    <p>
+      Comment on this post on
+      <a href="https://twitter.com/kevmo314/status/1316246032666308608"
+        >Twitter</a
+      >
+    </p>
+  </body>
+</html>
