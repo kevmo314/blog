@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Time-Invariant Finite State Machines | Kevin's Blog</title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@kevmo314" />
+    <meta
+      name="description"
+      content="There's something peculiar about the most popular Twitch streamers."
+    />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>Variety Streamers on Twitch: A Fast-Track to Growth</h1>
+    <em>December 13th, 2020</em>
+    <p>
+      There's something peculiar about the most popular Twitch streamers. Take a
+      look at the top 10 streamers as of today. (<a
+        href="https://en.wikipedia.org/wiki/List_of_most-followed_Twitch_channels"
+        >source</a
+      >)
+    </p>
+    <table>
+      <tr>
+        <th>Rank</th>
+        <th>Channel</th>
+        <th>Primary activity(ies)</th>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>Ninja</td>
+        <td>Fortnite, Valorant various games</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Tfue</td>
+        <td>Call of Duty: Warzone, various games</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>shroud</td>
+        <td>Various games</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Rubius</td>
+        <td>Minecraft, Among Us, chatting, various games</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Myth</td>
+        <td>Valorant, various games</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>pokimane</td>
+        <td>Various games, chatting</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>auronplay</td>
+        <td>Minecraft, Grand Theft Auto V, Among Us</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>TimTheTatman</td>
+        <td>Call of Duty: Warzone, various games</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>summit1g</td>
+        <td>Various games</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>TheGrefg</td>
+        <td>Fortnite, Minecraft</td>
+      </tr>
+    </table>
+    <p>
+      Notice any patterns? Perhaps the one that the title hints at?
+      <strong>8/10 of the top streamers stream variety content.</strong> Among
+      the top 50, 20 of them are labelled as streaming
+      <strong>various games</strong>. One explanation for this is that playing
+      one game is boring and gaming skill transfers pretty well, so it's easy to
+      just stream more games. In this post, I'll explore an alternate insight:
+      one that involves how Twitch ranks streams.
+    </p>
+    <h2>Small streamers, small categories</h2>
+    <p>
+      One tip I often see on
+      <a href="http://reddit.com/r/twitch">r/twitch</a> given to new streamers
+      is to try and find niche games and build a following there. The
+      justification is that it's difficult to be at the top of a category when
+      competing in the more popular ones. Let's consider Just Chatting:
+    </p>
+    <img src="/images/variety-streamers-on-twitch-1.png" />
+    <p>
+      Only one channel with less than 100 concurrent viewers was able to break
+      into "above the fold"! Indeed, in the entire category, there are
+      <em>thousands</em> of streamers. In order for a new streamer to have any
+      chance, they have to be quite lucky in getting new viewers.
+    </p>
+    <p>
+      Turns out, this actually does happen. Some viewers scroll pretty far below
+      the fold to find those with a low number of viewers, but it's not a
+      particularly reliable way to gather viewers. Instead, consider a much
+      smaller category: Zwift.
+    </p>
+    <img src="/images/variety-streamers-on-twitch-2.png" />
+    <p>
+      If I stream Zwift, I'm pretty much guaranteed to show up on the front page
+      above the fold. There's only two streamers! So if I start, I'll take up
+      1/3rd of the category. Now, you might ask,
+      <strong>who actually clicks on the Zwift category?</strong> It's a super
+      niche game, and many people probably haven't even heard of it. Turns out,
+      22.9K people are following Zwift and on mobile, it's placed pretty
+      prominently.
+    </p>
+    <img
+      src="/images/variety-streamers-on-twitch-3.png"
+      style="height: 500px"
+    />
+    <p>
+      And 22.9K people have this tiny game prominently on their home screen,
+      above their followers' channels! I'm by no means a big streamer, but
+      Twitch provides some channel insights. Turns out, about 27% of my viewers
+      come from organic discovery.
+    </p>
+    <img src="/images/variety-streamers-on-twitch-4.png" />
+    <p>
+      The mobile-boosting theory is also corroborated by quite a few viewers
+      being on mobile, however this might also be due to the ambient population
+      having that platform breakdown.
+    </p>
+    <img src="/images/variety-streamers-on-twitch-5.png" />
+    <p>
+      I hypothesize that it's not a coincidence: mobile viewers are more likely
+      to discover small streamers due to the current Twitch layout. But that's
+      okay! For small streamers, it's much easier to get some amount of traction
+      by streaming to smaller categories.
+    </p>
+    <h2>Growing beyond the category</h2>
+    <p>
+      Now, certainly there's not much of a market if I only stream Zwift. I'd be
+      lucky to capture all 22.9K followers, but even then that pales in
+      comparison to the millions of followers the top streamers have. To bridge
+      this gap, we look to the second discovery mechanism that Twitch offers:
+      following notifications.
+    </p>
+    <p>
+      Looking again to my viewer breakdown, 49% of my views are from existing
+      followers.
+    </p>
+    <img src="/images/variety-streamers-on-twitch-4.png" />
+    <p>
+      Especially on web, they're proudly listed at the top left of the page. If
+      someone is following me, I'll likely show up on the top left. Even better,
+      the more viewers I have the higher I show up on the list, so big channels
+      get even more exposure to followers.
+    </p>
+    <img src="/images/variety-streamers-on-twitch-6.png" />
+    <p>
+      Followers don't care about category. When I click on Myth's channel, I
+      never see what category they're streaming to. Therefore, as a small
+      streamer, if I capture enough of the Zwift "market" and gain some
+      followers, I can jump to another game and capture some more followers, and
+      rinse and repeat. Everyone comes along for the ride. Vertical
+      segmentation!
+    </p>
+    <p>
+      Turns out, Zwift is a bit of a novelty here. There are actually quite a
+      few categories with a large number of streams but not many viewers or
+      followers. So category choice matters quite a bit.
+    </p>
+    <h2>Exploiting the algorithm: IRL streams</h2>
+    <p>
+      Okay, so now you're wondering: I don't want to stream games I don't like
+      to play. That's a totally fair view! The categories for IRL streaming,
+      however, are a bit unique. Unlike video games, it's very possible to fit
+      into multiple categories at once. Let's look at the 14 IRL categories on
+      Twitch.
+    </p>
+    <img src="/images/variety-streamers-on-twitch-7.png" />
+    <p>
+      I stream biking. I could easily justify my stream as falling under
+      <strong>Fitness & Health</strong>, <strong>Special Events</strong>,
+      <strong>Sports</strong>, and <strong>Travel &amp; Outdoors</strong>. Then,
+      when I'm coding, I can definitely justify streaming under
+      <strong>Science &amp; Technology</strong>, and maybe
+      <strong>Makers &amp; Crafting</strong> or
+      <strong>Talk Shows &amp; Podcasts</strong>. In both cases, of course I can
+      stream to the big fish <strong>Just Chatting</strong>.
+    </p>
+    <p>
+      So now we arrive at the approach to grow a channel as fast as possible.
+    </p>
+    <ol>
+      <li>
+        Guess how many views your content will have based on past streams and
+        current number of followers.
+      </li>
+      <li>
+        Find the category with the highest number of followers for which you'll
+        rank as among the top channels in that category.
+      </li>
+      <li>Stream to that category, rinse and repeat!</li>
+    </ol>
+    <p>
+      This approach will maximize the number of category followers who will see
+      your channel, increasing the organic discovery rate of your content.
+    </p>
+    <h2>Does it work?</h2>
+    <p>
+      We'll find out! I started streaming a month ago, and only seriously
+      streamed since last week. Fundamentally, this approach exploits the
+      algorithm to increase <strong>exposure</strong>. Going back to the top
+      streamers all streaming variety content, I have a hunch that streaming
+      variety content not only keeps it more interesting, but also increases
+      exposure as they're able to stream to more categories and get more views,
+      using their follower base to boost them to the top of big categories. For
+      example, if Myth (~1K+ viewers/stream) suddenly started streaming in
+      <strong>Science &amp; Technology</strong> talking about his gaming setup
+      or really anything, he would probably get a lot of new organic views that
+      <strong>Valorant</strong> wouldn't provide and a good fraction of them
+      would convert to new followers.
+    </p>
+    <p>
+      Getting the most eyeballs on your channel will maximize followers. Being
+      an IRL streamer also offers a unique advantage for small streamers too: I
+      can stream snipe someone else in NYC and show up on their stream. This
+      worked pretty well for me with
+      <a href="https://twitch.tv/miekii">Miekii's stream</a>, I went from 20
+      followers to 43! For growing a channel, exposure is the name of the game.
+    </p>
+    <p>
+      Of course, there are other considerations: growing community, engaging
+      viewers, external promotion, and generally talking with everyone helps
+      gain followers. But this approach can be done on top of all of that. After
+      two weeks, I made it to Twitch affiliate! Let's see how long it takes me
+      to get to partner.
+    </p>
+    <hr />
+    <p>Follow me on <a href="https://twitch.tv/muxfd">Twitch</a>.</p>
+  </body>
+</html>
