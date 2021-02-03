@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>
+      Compiling Custom Kernel Modules on the Jetson Nano | Kevin's Blog
+    </title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@kevmo314" />
+    <meta
+      name="description"
+      content="The Jetson Nano doesn't come with all the standard Linux kernel modules
+      compiled in. Here's how to add them in."
+    />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>Compiling Custom Kernel Modules on the Jetson Nano</h1>
+    <em>February 3rd, 2021</em>
+    <p>
+      The Jetson Nano doesn't come with all the standard Linux kernel modules
+      compiled in. You might want one that isn't there by default. For example,
+      TTL mangling doesn't work on the Jetson Nano.
+    </p>
+    <pre>
+$ sudo iptables -t mangle -I POSTROUTING -j TTL --ttl-set 65
+iptables: No chain/target/match by that name.</pre
+    >
+    <p>
+      NVIDIA publishes a
+      <a
+        href="https://docs.nvidia.com/jetson/l4t/index.html#page/Tegra%20Linux%20Driver%20Package%20Development%20Guide/kernel_custom.html#wwpID0E06C0HA"
+        >guide</a
+      >
+      for compiling the kernel, but it's a bit opaque. Figuring out this process
+      helped me understand a small chunk of the linux kernel module world, so
+      I'd like to share a more didactic guide to compiling the kernel from
+      scratch. If you notice any issues going through this guide, please feel
+      free to
+      <a href="mailto:kevmo314@gmail.com">email me</a>.
+    </p>
+    <h2>1. Get a VM</h2>
+    <p>
+      First, you'll need to be on an Ubuntu machine. The NVIDIA SDK doesn't
+      allow execution under root, so it won't work with WSL sadly.
+    </p>
+    <h2>2. Install the SDK</h2>
+    <p>
+      Download the
+      <a href="https://developer.nvidia.com/nvidia-sdk-manager">SDK Manager</a>
+      and ship that <code>.deb</code> file over to your Ubuntu VM. Install the
+      dependencies, noting that the <code>.deb</code> file specified here needs
+      to match the one you received.
+    </p>
+    <pre>
+sudo apt install -y libgconf-2-4 libcanberra-gtk-module
+sudo dpkg -i sdkmanager_1.4.0-7363_amd64.deb</pre
+    >
+    <p>Run the SDK Manager to query available targets.</p>
+    <pre>sdkmanager --query interactive</pre>
+    <p>
+      Choose the options relevant to you, but skip flashing. My configuration
+      with the Jetson Nano 2GB looks like
+    </p>
+    <pre>
+$ sdkmanager --query interactive
+Authenticating with NVIDIA server...
+Login succeeded.
+Loading user information...
+User information loaded successfully.
+Loading server data...
+Server data loaded successfully.
+- select product: Jetson
+- hardware configuration: Host Machine, Target Hardware
+- select target: Jetson Nano [2GB developer kit version]
+- select target operating system: Linux
+- select version: JetPack 4.5
+- get detailed options: No
+- flash the target board: No
+
+Launch Command:
+sdkmanager --cli install  --logintype devzone --product Jetson --host --target P3448-0003 --targetos Linux --version 4.5 --flash skip</pre
+    >
+    <p>
+      Run that launch command that it spits out and go through the interactive
+      process. This will take a while to download/install everything.
+    </p>
+    <h2>3. Install the toolchain</h2>
+    <p>
+      Now, we can follow the NVIDIA guide a little closer. We'll install the
+      compilation toolchain, which includes gcc and all those goodies.
+    </p>
+    <pre>
+wget http://releases.linaro.org/components/toolchain/binaries/7.3-2018.05/aarch64-linux-gnu/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz
+tar xf gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz
+export CROSS_COMPILE=${pwd}/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
+export LOCALVERSION=-tegra
+</pre
+    >
+    <h2>4. Grab the kernel source code</h2>
+    <p>
+      You can find the latest version of the source code
+      <a href="https://developer.nvidia.com/embedded/downloads"
+        >on the NVIDIA downloads page</a
+      >
+      under "L4T Sources".
+    </p>
+    <pre>
+wget https://developer.nvidia.com/embedded/L4T/r32_Release_v4.4/r32_Release_v4.4-GMC3/Sources/T210/public_sources.tbz2
+tar -xjf public_sources.tbz2
+cd Linux_for_Tegra/source/public
+tar -xjf kernel_src.tbz2
+cd kernel/kernel-4.9</pre
+    >
+    <h2>5. Configure and build the kernel</h2>
+    <p>Make sure the proper dependencies are installed.</p>
+    <pre>sudo apt install build-essential bc libncurses5 libncurses5-dev</pre>
+    <p>
+      and specify where the kernel output should go (you can choose a different
+      location, it doesn't matter)
+    </p>
+    <pre>
+TEGRA_KERNEL_OUT=$HOME/t4l-kernel
+mkdir -p $TEGRA_KERNEL_OUT</pre
+    >
+    <p>Initialize the config</p>
+    <pre>make ARCH=arm64 O=$TEGRA_KERNEL_OUT tegra_defconfig</pre>
+    <p>
+      Then configure the build. Choose the options you want. Alternatively, you
+      can specify the specific module by name by editing
+      <code>$TEGRA_KERNEL_OUT/.config</code>.
+    </p>
+    <pre>make menuconfig</pre>
+    <p>
+      If you are specifically looking to enable TTL mangling, enable
+      <code>CONFIG_NETFILTER_XT_TARGET_HL</code> in
+      <code>$TEGRA_KERNEL_OUT/.config</code>.
+    </p>
+    <p>
+      After configuring, kick off the build, replacing 4 with the number of
+      cores your system has.
+    </p>
+    <pre>make ARCH=arm64 O=$TEGRA_KERNEL_OUT -j4</pre>
+    <h2>6. Packaging the kernel</h2>
+    <p>
+      The NVIDIA SDK manager should have created a directory at
+      <code
+        >~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra</code
+      >
+      (or similar, depending on your board choice in the second step). Copy over
+      the <code>Image</code> and <code>dtb</code> files.
+    </p>
+    <pre>
+cp $TEGRA_KERNEL_OUT/arch/arm64/boot/Image ~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra/kernel/Image
+cp -r $TEGRA_KERNEL_OUT/arch/arm64/boot/dts/* ~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra/kernel/dtb
+    </pre>
+    <p>Then install the modules</p>
+    <pre>
+sudo make ARCH=arm64 O=$TEGRA_KERNEL_OUT modules_install INSTALL_MOD_PATH=~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra/rootfs/</pre
+    >
+    <p>
+      Lastly, change over to this directory and build the sdcard image. Note
+      that the target for <code>jetson-disk-image-creator.sh</code> will change
+      depending on your board. Run
+      <code>./tools/jetson-disk-image-creator.sh</code> to get the options
+      available.
+    </p>
+    <pre>
+cd ~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra/
+sudo ./apply_binaries.sh -r rootfs
+sudo ./tools/jetson-disk-image-creator.sh -o sdcard.img -b jetson-nano-2gb-devkit</pre
+    >
+    <h2>7. Flash the SD card and we're done!</h2>
+    <p>
+      Take that <code>sdcard.img</code> and flash it with your favorite
+      <a href="https://www.balena.io/etcher/">sd card imager</a> and we're off
+      to the races. For me, that means
+    </p>
+    <pre>sudo iptables -t mangle -I POSTROUTING -j TTL --ttl-set 65</pre>
+    <p>works!</p>
+    <hr />
+    <p>
+      Comment on this post on
+      <a href="https://twitter.com/kevmo314/status/1316246032666308608"
+        >Twitter</a
+      >
+    </p>
+  </body>
+</html>
