@@ -100,7 +100,7 @@ sdkmanager --cli install  --logintype devzone --product Jetson --host --target P
     <pre>
 wget http://releases.linaro.org/components/toolchain/binaries/7.3-2018.05/aarch64-linux-gnu/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz
 tar xf gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz
-export CROSS_COMPILE=${pwd}/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
+export CROSS_COMPILE=$(pwd)/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
 export LOCALVERSION=-tegra
 </pre
     >
@@ -159,8 +159,8 @@ mkdir -p $TEGRA_KERNEL_OUT</pre
     </p>
     <pre>
 cp $TEGRA_KERNEL_OUT/arch/arm64/boot/Image ~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra/kernel/Image
-cp -r $TEGRA_KERNEL_OUT/arch/arm64/boot/dts/* ~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra/kernel/dtb
-    </pre>
+cp -r $TEGRA_KERNEL_OUT/arch/arm64/boot/dts/* ~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra/kernel/dtb</pre
+    >
     <p>Then install the modules</p>
     <pre>
 sudo make ARCH=arm64 O=$TEGRA_KERNEL_OUT modules_install INSTALL_MOD_PATH=~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra/rootfs/</pre
