@@ -13,8 +13,7 @@
     <meta name="twitter:site" content="@kevmo314" />
     <meta
       name="description"
-      content="The Jetson Nano doesn't come with all the standard Linux kernel modules
-      compiled in. Here's how to add them in."
+      content="IRL streaming is difficult. Maintaining a connection fast enough to stream video in variable environments causes many issues. In this post, I cover the ~3 months of work I've done so far to build a stable IRL streaming rig that outperforms all existing solutions."
     />
 
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -26,13 +25,13 @@
     <em>April 14th, 2021</em>
     <p>
       IRL streaming is difficult. Maintaining a connection fast enough to stream
-      video in variable environments causes many issues. In this post, I'll talk
-      about the ~3 months of work I've done so far to build a stable IRL
-      streaming rig that outperforms all existing solutions. This post is also
-      intended to be a technical document detailing all the research I've done
-      so it will be quite opaque. A more accessible version (probably a YouTube
-      video) is coming soon, but until then please only contact me for support
-      if you have gone through the guide and understand what's going on.
+      video in variable environments causes many issues. In this post, I cover
+      the ~3 months of work I've done so far to build a stable IRL streaming rig
+      that outperforms all existing solutions. This post is also intended to be
+      a technical document detailing all the research I've done so it will be
+      quite opaque. A more accessible version (probably a YouTube video) is
+      coming soon, but until then please only contact me for support if you have
+      gone through the guide and understand what's going on.
     </p>
     <p>
       <strong>Note for new streamers:</strong> You probably don't need this
@@ -44,6 +43,7 @@
     </p>
     <h2>Background</h2>
     <p>
+      This document assumes some familiarity with how IRL streaming works today.
       Current IRL streaming solutions boil down to the following options, in
       what I believe descending order of market share.
     </p>
@@ -104,7 +104,7 @@
         writing my own code.
       </li>
     </ul>
-    <p>A typical backpack setup looks like the following</p>
+    <p>A mininal backpack setup looks like the following</p>
     <img src="images/the-road-to-zero-disconnects-1.jpg" />
     <p>Perhaps not huge, but we can do better.</p>
     <h2>The Muxbox: Overview</h2>
