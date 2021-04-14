@@ -398,7 +398,7 @@
         <code>srt://&lt;your server ip&gt;:1935?streamid=play/mooo</code>.
       </li>
     </ol>
-    <h2>Development Timeline</h2>
+    <h2>Development History</h2>
     <p>
       In the process of developing the above setup, I've gone through a number
       of iterations. I use the metric of disconnects/hr which represents the
@@ -417,7 +417,10 @@
       with this approach is that OpenMPTCPRouter is not aware that the payload
       is video, so it does not actively discard packets when they are too late.
       This results in flooding the available bandwidth when bandwidth is
-      recovered, extending downtime. This setup results in ~6 disconnects/hr.
+      recovered, extending downtime. This could potentially be worked around by
+      cleverly setting the TTL on packets, however this would expose the GoPro
+      to downstream network fluctuations as well. This setup results in ~6
+      disconnects/hr.
     </p>
     <p>
       To attempt to proxy the connection so the GoPro doesn't see the network
