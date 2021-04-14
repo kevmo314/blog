@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>
+      Compiling Custom Kernel Modules on the Jetson Nano | Kevin's Blog
+    </title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@kevmo314" />
+    <meta
+      name="description"
+      content="The Jetson Nano doesn't come with all the standard Linux kernel modules
+      compiled in. Here's how to add them in."
+    />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>The Road to Zero Disconnects: The Muxbox</h1>
+    <em>April 14th, 2021</em>
+    <p>
+      IRL streaming is difficult. Maintaining a connection fast enough to stream
+      video in variable environments causes many issues. In this post, I'll talk
+      about the ~3 months of work I've done so far to build a stable IRL
+      streaming rig that outperforms all existing solutions. This post is also
+      intended to be a technical document detailing all the research I've done
+      so it will be quite opaque. A more accessible version (probably a YouTube
+      video) is coming soon, but until then please only contact me for support
+      if you have gone through the guide and understand what's going on.
+    </p>
+    <p>
+      <strong>Note for new streamers:</strong> You probably don't need this
+      guide. This note is really important and I've put it right at the top
+      intentionally. You don't need to have zero disconnects. Get your phone,
+      boot up Streamlabs, and start streaming. Or grab your GoPro and use the
+      app to stream. Your first priority is <em>streaming</em>, not finding a
+      perfect rig.
+    </p>
+    <h2>Background</h2>
+    <p>
+      Current IRL streaming solutions boil down to the following options, in
+      what I believe descending order of market share.
+    </p>
+    <ol>
+      <li>
+        <a href="https://streamlabs.com/mobile-app">Streamlabs's mobile app</a>
+        or GoPro's app
+      </li>
+      <li><a href="https://gosolo.tv/">LiveU Solo or UnlimitedIRL</a></li>
+      <li>
+        <a href="https://teradek.com/collections/vidiu-go">Teradek Vidiu Go</a>
+      </li>
+      <li>
+        <a href="https://www.peplink.com/products/max-transit-duo/"
+          >Peplink MAX Transit Duo</a
+        >
+        + Encoder
+      </li>
+      <li><a href="https://belabox.net">BELABOX</a> + Encoder</li>
+    </ol>
+    <p>The primary issues I find with these solutions are</p>
+    <ul>
+      <li>
+        <strong>High cost.</strong> Options 2-4 are considered professional
+        options and above generally exceed $1.5k USD in cost.
+      </li>
+      <li>
+        <strong>Many components and fragility.</strong> Options 2-5 all require
+        multiple parts and cables to wire everything together. Streamers
+        typically assemble backpacks just to carry all this around, but having
+        many parts results in more parts that can break, leading to higher
+        fragility.
+      </li>
+      <li>
+        <strong>Overheating.</strong> Options 2-5 all utilize an external
+        encoder. The GoPro has a perfectly good encoder (and actually quite
+        efficient), despite being
+        <a
+          href="https://community.gopro.com/t5/GoPro-Labs/RTMP-disconnects-with-quot-Network-Error-quot/td-p/1047995"
+          >wrapped in some bad software</a
+        >. Having an encoder draws a lot of power, which is converted to heat.
+        Many streamers often complain about overheating issues as the encoder is
+        often located in their backpack.
+      </li>
+      <li>
+        <strong>Heavy weight.</strong> Powering an external encoder draws a lot
+        of power. It is not unusual to see streamers using multiple
+        <a
+          href="https://www.amazon.com/MAXOAK-50000mAh-Portable-Charger-External/dp/B00YP823NA"
+          >MAXOAK battery banks</a
+        >
+        to power their backpack, resulting in 10+ lb backpacks.
+      </li>
+      <li>
+        <strong>No modifiability.</strong> Options 1-4 all rely on proprietary
+        components. The stability of the system is at the will of proprietary
+        code and can't easily be modified. And I'm a software engineer so I like
+        writing my own code.
+      </li>
+    </ul>
+    <p>A typical backpack setup looks like the following</p>
+    <img src="images/the-road-to-zero-disconnects-1.jpg" />
+    <p>Perhaps not huge, but we can do better.</p>
+    <h2>The Muxbox: Overview</h2>
+    <p>Let's break down what we need in an IRL streaming rig.</p>
+    <ol>
+      <li>
+        <strong>Camera.</strong> There are basically three options: your phone,
+        a GoPro, or a Sony AS300. Most streamers seem to use a phone due to ease
+        of use or the Sony AS300 due to GoPro's terrible software.
+      </li>
+      <li>
+        <strong>Encoder.</strong> This converts the camera video feed into a
+        H.264/265 stream to be sent over the network.
+      </li>
+      <li>
+        <strong>Cell bonder.</strong> One way to improve stability is to bond
+        multiple cell connections together. When one connection goes down,
+        another can take over if it's available. Alternatively, if two
+        connections are operating at 3 Mbps, we can bond them together to
+        achieve 6 Mbps.
+      </li>
+    </ol>
+    <p>
+      In the Muxbox, I use a GoPro, which supports RTMP streaming. Notably,
+      however, it's not very good. When the GoPro runs into any sort of network
+      problem it disconnects the stream. This is particularly annoying, but when
+      I ran off of this setup, I measured disconnects between 1-2 per hour,
+      depending on where I was located. This is actually surprisingly good,
+      which is why I advocate that new streamers use this setup and not worry
+      about a backpack. It's quite hard to do better than 1-2 disconnects per
+      hour.
+    </p>
+    <p>
+      To stabilize the network connection, I stream the Muxbox to a wifi access
+      point broadcasted by a Jetson Nano. This Jetson Nano ingests the stream
+      immediately, so the GoPro never sees any further downstream network
+      problems.
+    </p>
+    <p>
+      On the Jetson Nano, I transmux the RTMP stream from the GoPro to an SRT
+      stream. SRT provides more reliability than RTMP. However, in practice I've
+      found that RTMP is not actually that much worse, but SRT recovers a bit
+      faster from poor network connections. My understanding is that the LiveU
+      actually uses RTMP successfully, which corroborates that RTMP is not
+      actually as bad as many IRL streamers believe.
+    </p>
+    <p>
+      The Jetson Nano runs some custom bonding code and I use three Motorola
+      Moto E's as modems, one per network (T-Mobile, Verizon, AT&T). The SRT
+      stream is sent through these bonded connections and received on a remote
+      server, which reassembles the stream and pipes it to OBS. OBS adds the
+      overlays and then sends the completed stream to Twitch.
+    </p>
+    <p>
+      Here's what the Muxbox looks like when all set up in a messenger bag.
+      Plenty of room for activities!
+    </p>
+    <img src="images/the-road-to-zero-disconnects-2.jpg" />
+    <h3>Pros and Cons</h3>
+    <p>
+      The biggest benefit to this setup is fewer components. The Jetson Nano is
+      reasonably small, but more significantly I do not require a fragile HDMI
+      cable. Each component is individually powered (even the modems). The only
+      single point of failure in my setup is the power to the Jetson Nano. In
+      fact, having the GoPro wirelessly transmit to the Jetson Nano leads to
+      unique streaming opportunities, such as being able to throw the GoPro or
+      passing it between streamers, as well as allowing multiple cameras
+      trivially.
+      <a href="https://www.twitch.tv/moosedoesstuff">MooseDoesStuff</a> is a
+      streamer that exemplifies these benefits, as he's not able to be tethered
+      to his computer or carry a large backpack while working.
+    </p>
+    <p>
+      Second, I leverage the GoPro's encoder, so a separate encoder isn't
+      necessary. Since the encoder is often expensive and placed in the
+      backpack, this ends up being a decent cost savings and dramatically
+      reduces the amount of heat generated. The GoPro is typically in open air,
+      so it's much easier to bleed off heat.
+    </p>
+    <p>
+      Third, the setup uses very little battery. I've found that the GoPro's
+      encoder is notoriously efficient. I haven't run a full test, but a single
+      20000 mAh battery should be enough to power a 12 hour stream. The longest
+      stream I've run is about six hours with half the battery used. A MAXOAK
+      battery would be equivalent to streaming for a full 36 hours. This also
+      translates to weight savings. The Muxbox typically weighs 2-3 lbs.
+    </p>
+    <p>
+      Lastly, I use mostly easy-to-find parts. Even finding a Sony AS300 is
+      getting difficult these days, let alone trying to actually acquire a LiveU
+      Solo. The Jetson Nano is probably the hardest component to find, but other
+      boards can also work.
+    </p>
+    <p>
+      These benefits are not without some cons, however. The biggest con is a
+      fixed bitrate. The GoPro streams at ~4500 kbps, which is much lower than
+      what the LiveU outputs. I've chosen to accept this because I believe that
+      value can both be configured with some firmware hacking and that GoPro
+      will one day change the cap. However, subjectively it seems that most
+      viewers still deem ~4500 kbps sufficiently high quality.
+    </p>
+    <p>
+      Second, the community around IRL streaming seems to have discounted
+      wireless streaming and the GoPro entirely. I hope to change the
+      perception, but currently there is not much community support around such
+      efforts.
+    </p>
+    <h3>Components</h3>
+    <p>
+      So this is the good stuff. Here's the full hardware bill of materials. In
+      total, it comes to ~$820 for a setup with three modems.
+    </p>
+    <ul>
+      <li>
+        (~$350) One GoPro. HERO 8/9 works best due to the
+        <a href="https://gopro.github.io/labs/control/rtmp/">QR Code support</a
+        >, but any version supporting RTMP streaming should work.
+      </li>
+      <li>
+        (~$100) One
+        <a
+          href="https://developer.nvidia.com/embedded/jetson-nano-developer-kit"
+          >Jetson Nano</a
+        >. Curiously, this is the only board that I have managed to get the
+        GoPro to stabily connect to. I've tried the Latte Panda, Raspberry Pi,
+        Rock Pi, and NanoPi, however none have been able to maintain a stable
+        wifi connection with the GoPro except this one. The software doesn't
+        require this specific board, however, so if you try other boards and
+        manage to get it working, I'd love to hear. The form factor of the
+        Jetson Nano is a bit annoying.
+      </li>
+      <li>
+        (~$20) One
+        <a
+          href="https://www.amazon.com/Type-C-USB-C-charge-trigger-detector/dp/B07T2858G6"
+          >power delivery decoy trigger</a
+        >
+        and
+        <a
+          href="https://www.amazon.com/SIM-NAT-Pigtails-Security-Surveillance/dp/B01GPL8MVG/"
+          >cables</a
+        >. The Jetson Nano requires DC for higher power consumption. I've tried
+        with the micro USB port, however it seems that it doesn't power the
+        Jetson Nano sufficiently. I need to do more research in this area,
+        because it should. Using a power delivery allows the board to be powered
+        by USB-C, dramatically broadening the number of battery packs that are
+        compatible. It would also work to buy a DC battery pack.
+      </li>
+      <li>
+        (~$30) One
+        <a
+          href="https://www.amazon.com/Makeronics-Wireless-Bluetooth-Assembly-Instruction/dp/B07X2NLL85/"
+          >Intel AC8265</a
+        >
+        wireless card and antenna set. Another annoyance with the Jetson Nano is
+        it doesn't include wifi. C'est la vie.
+      </li>
+      <li>
+        (~$100 each)
+        <a
+          href="https://www.amazon.com/Moto-Unlocked-Motorola-Camera-XT2052-1/dp/B086H3HH5V"
+          >Motorola Moto E</a
+        >'s, one per SIM card you want. Don't buy it off Amazon though, get them
+        used. I bought a pack of three used for ~$250. Specifically this phone,
+        however, because it has the best band coverage across all providers.
+      </li>
+      <li>
+        (~$20) Any battery pack. I use
+        <a
+          href="https://www.amazon.com/Anker-PowerCore-Technology-High-Capacity-Compatible/dp/B07S829LBX/"
+          >this one</a
+        >, but it doesn't matter as long as you get one that supports Power
+        Delivery.
+      </li>
+      <li>
+        A remote Linux server. Actually I guess it doesn't have to be Linux. It
+        needs to run Docker though.
+      </li>
+    </ul>
+    <p>
+      Maybe get a Jetson Nano case too. There are a bunch off Amazon. I use
+      <a
+        href="https://www.amazon.com/GeeekPi-Jetson-Cooling-Control-Developer/dp/B07VVJNXMB/"
+        >this one</a
+      >, but they all suck. Another reason I don't like the Jetson Nano.
+    </p>
+    <h3>Assembly</h3>
+    <ol>
+      <li>
+        Install the Intel AC8265 into the Jetson Nano and attach the antennas.
+        Use
+        <a
+          href="https://desertbot.io/blog/how-to-add-a-dual-wifi-bluetooth-card-to-a-jetson-nano-intel-8265"
+          >this guide</a
+        >
+        if you opted to buy a version with no instructions.
+      </li>
+      <li>
+        Build your hacky power delivery cable to go from USB-C to DC barrel
+        jack.
+      </li>
+      <li>
+        Optional: Follow
+        <a
+          href="https://blog.kevmo314.com/compiling-custom-kernel-modules-on-the-jetson-nano.html"
+          >this guide</a
+        >
+        to compile a custom kernel module to enable TTL mangling. This gets
+        around some providers' hotspot throttling. This can also be set in
+        <code>/etc/sysctl.conf</code> however it didn't seem to work for me.
+      </li>
+      <li>
+        Configure your Android phones to always tether. Under Developer Options,
+        change Default USB configuration to USB tethering. Maybe turn on Do not
+        Disturb permanently. I also change the background color to the
+        providers' colors so I know which SIM is in which phone at a glance.
+      </li>
+      <li>
+        Optional: Install the
+        <a
+          href="https://community.gopro.com/t5/en/Introducing-GoPro-Labs/ta-p/603173"
+          >GoPro labs firmware</a
+        >
+        so you can get QR code support. It makes starting the stream a lot
+        easier.
+      </li>
+      <li>
+        Boot up the Jetson Nano and install
+        <a href="https://www.docker.com/">Docker</a>.
+      </li>
+      <li>
+        On the Jetson Nano, run
+        <code
+          >sudo docker run --detach --restart always --port 1935:1935 --add-host
+          host.docker.internal:host-gateway --env
+          SRT_RELAY_SERVER=host.docker.internal:1985
+          muxfd/muxbox-nginx-rtmp-srt-transmuxer</code
+        >.
+      </li>
+      <li>
+        On the Jetson Nano, run
+        <code
+          >sudo docker run --detach --restart always --network host
+          muxfd/multipath-udp-sender -i 0.0.0.0:1985 &lt;your server
+          ip&gt;:1985</code
+        >.
+      </li>
+      <li>
+        Set up a wifi access point on the Jetson Nano.
+        <ol>
+          <li>Click the wifi networks icon in the menu bar</li>
+          <li>Click <code>Edit Connections...</code></li>
+          <li>Add a new connection</li>
+          <li>Set it to <code>AP/Hotspot</code> mode</li>
+          <li>Set your SSID and password</li>
+          <li>Restart your Jetson Nano</li>
+        </ol>
+      </li>
+      <li>On your VPS, install Docker.</li>
+      <li>
+        On your VPS, run
+        <code
+          >sudo docker run --detach --restart always --port 1985:1985/udp
+          --add-host host.docker-internal:host-gateway
+          muxfd/multipath-udp-receiver -i 0.0.0.0:1985
+          host.docker.internal:1935</code
+        >.
+      </li>
+      <li>
+        On your VPS, run
+        <code
+          >sudo docker run --detach --restart always --port 1935:1935/udp
+          muxfd/srt-relay</code
+        >.
+      </li>
+      <li>
+        That's it! Try connecting your GoPro to the Jetson Nano's AP and stream
+        to <code>rtmp://10.42.0.1:1935/live/mooo</code>. In OBS, you should be
+        able to receive this as
+        <code>srt://&lt;your server ip&gt;:1935?streamid=play/mooo</code>.
+      </li>
+    </ol>
+    <h2>Development Timeline</h2>
+    <p>
+      In the process of developing the above setup, I've gone through a number
+      of iterations. I use the metric of disconnects/hr which represents the
+      number of times I need to stop and touch/reset the setup while streaming
+      under typical conditions. A packet loss of greater than two seconds is
+      also considered a disconnect, even if it's able to autorecover.
+    </p>
+    <p>
+      First, I started with RTMP streaming through a single-SIM hotspot. This
+      results in ~1-2 disconnects/hr. Again, remarkably difficult to do better
+      than, so I recommend all streamers start with this setup.
+    </p>
+    <p>
+      Next, I attempted to use a Raspberry Pi loaded with
+      <a href="https://www.openmptcprouter.com/">OpenMPTCPRouter</a>. The issue
+      with this approach is that OpenMPTCPRouter is not aware that the payload
+      is video, so it does not actively discard packets when they are too late.
+      This results in flooding the available bandwidth when bandwidth is
+      recovered, extending downtime. This setup results in ~6 disconnects/hr.
+    </p>
+    <p>
+      To attempt to proxy the connection so the GoPro doesn't see the network
+      fluctuations, I attempted to use a Raspberry Pi to run nginx with a USB
+      modem, the ZTE MF833V. This results in ~4 disconnects/hr.
+    </p>
+    <p>
+      To improve reliability, I had the GoPro transmux the stream to SRT before
+      sending it over the network. This results in ~3.5 disconnects/hr.
+    </p>
+    <p>
+      I then learned that the GoPro doesn't really like the Raspberry Pi's wifi
+      adapter. I tried various boards until landing on the Jetson Nano + Intel
+      AC8265 with a single USB modem. This results in ~2 disconnects/hr.
+    </p>
+    <p>
+      To bond multiple modems together, I then used
+      <a href="https://github.com/BELABOX/srtla">srtla</a> for aggregation. This
+      results in ~1.5 disconnects/hr.
+    </p>
+    <p>
+      I hypothesized that the USB modems were not strong enough to maintain
+      connection with the cell towers, so I switched to using a single Moto E.
+      This results in ~1 disconnect/hr. With srtla and multiple modems, I am not
+      able to see an improvement. I hypothesize that this is due to srtla
+      relying on congestion control, whereas in my case it's better to push
+      packets aggresively, as the bitrate cannot be adjusted upstream.
+    </p>
+    <p>
+      In order to improve further, I wrote my custom bonding code to bond the
+      modems together more aggressively to accommodate constant bitrates. This
+      achieves an estimated ~0.3 disconnects/hr, which is the current state.
+    </p>
+    <h2>Further Research</h2>
+    <p>
+      As you can see, the road to zero disconnects/hr is a long one. I had
+      anticipated I'd accomplish this in a month, however three months later,
+      I'm still working on improving. I'm proud to say though, based on watching
+      other streamers' LiveU setups, they achieve ~0.75 disconnects/hr so this
+      setup is able to be more stable than a LiveU with equivalent bonded
+      connections. I'm continuing to improve the stability of the bonding code
+      and hope to further lower the disconnect rate.
+    </p>
+    <p>
+      Furthermore, I'm currently investigating how to get rid of the Jetson
+      Nano. Its form factor is rather annoying due to being totally overkill for
+      what I'm asking it to do and the power delivery trigger can be a bit
+      fragile. However, many other boards can't seem to maintain the wifi
+      connection to the GoPro. I'm not sure why the Intel AC8265 specifically
+      can maintain that connection. Even more peculiarly, I've run the Intel
+      AC8265 in a Latte Panda with no success.
+    </p>
+    <p>
+      Additionally, I would also like to find a smaller form factor modem. The
+      Motorola Moto E's have been great because they are slim, but they are
+      comparably heavier than ZTE MF833V's which I've used as well due to
+      carrying around a cell phone battery. However, I have not found a lighter
+      modem that can maintain connection as well as a cell phone.
+    </p>
+    <h2>Acknowledgments and Retrospective</h2>
+    <p>
+      Thanks to everyone who has tuned into my streams. I basically use them as
+      a testing ground and all my viewers are indirectly guinea pigs subjected
+      to frequent F's and LSD. I guess my content is interesting enough that
+      it's worth sitting through, but thanks everyone for helping me get this
+      far.
+    </p>
+    <p>
+      Additionally, I want to thank rational_sail specifically with his
+      <a href="https://github.com/BELABOX/srtla">BELABOX project</a> of which I
+      used srtla as a basis for my own bonding code. He's done a great deal of
+      work and BELABOX is a good alternative if you're looking for a solution
+      that more closely mirrors the LiveU.
+    </p>
+    <p>
+      Lastly, one of my viewers, gregwire, has been particularly helpful in
+      telling me about modem tech and antennas, which I formed a few more
+      hypotheses around why the GoPro might be disconnecting and why my modems
+      weren't strong enough.
+    </p>
+    <p>
+      Looking back, it's clear my lack of hardware knowledge was the biggest
+      impediment. I likely could have iterated much quicker investing in more
+      expensive modem tech first and attempting to lower costs afterwards. I
+      ended up losing a good amount of time to trying out cheaper boards that
+      didn't make much progress whereas I should have started with a more
+      expensive platform of stronger modems first. I got very lucky in trying
+      the Jetson Nano not too late and I should've done that with my modems as
+      well. Additionally, I continue to have a lack of insight into why the
+      GoPro doesn't seem to like other boards, but unfortunately lack the
+      knowledge to debug this further. This remains an open point that I'm not
+      sure I'll be able to resolve.
+    </p>
+    <p>
+      If you're interested in helping with development and experimentation, I'd
+      love to hear from you.
+      <a href="https://discord.gg/buM479ZYTd">Join my discord!</a>
+    </p>
+    <hr />
+    <p>
+      Comment on this post on
+      <a href="https://twitter.com/kevmo314/status/1357049500645396487"
+        >Twitter</a
+      >
+    </p>
+  </body>
+</html>
