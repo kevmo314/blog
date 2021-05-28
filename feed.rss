@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Kevin's Blog</title>
+        <description>I mean this is a manually written RSS feed did you really expect me to add a description</description>
+        <link>https://blog.kevmo314.com/</link>
+        <ttl>1800</ttl>
+        <item>
+            <title>Twitch: Essentially Tinder</title>
+            <link>https://blog.kevmo314.com/twitch-essentially-tinder.html</link>
+        </item>
+        <item>
+            <title>In Praise of Live</title>
+            <link>https://blog.kevmo314.com/in-praise-of-live.html</link>
+        </item>
+        <item>
+            <title>The Road to Zero Disconnects: The Muxbox</title>
+            <link>https://blog.kevmo314.com/the-road-to-zero-disconnects.html</link>
+        </item>
+        <item>
+            <title>Lessons from Broadcast Television</title>
+            <link>https://blog.kevmo314.com/lessons-from-broadcast-television.html</link>
+        </item>
+        <item>
+            <title>Compiling Custom Kernel Modules on the Jetson Nano</title>
+            <link>https://blog.kevmo314.com/compiling-custom-kernel-modules-on-the-jetson-nano.html</link>
+        </item>
+        <item>
+            <title>Statistically Speaking</title>
+            <link>https://blog.kevmo314.com/statistically-speaking.html</link>
+        </item>
+        <item>
+            <title>Variety Streamers on Twitch: A Fast-Track to Growth</title>
+            <link>https://blog.kevmo314.com/variety-streamers-on-twitch.html</link>
+        </item>
+        <item>
+            <title>Time-Invariant Finite State Machines</title>
+            <link>https://blog.kevmo314.com/time-invariant-finite-state-machines.html</link>
+        </item>
+        <item>
+            <title>A Very Different Company</title>
+            <link>https://blog.kevmo314.com/a-very-different-company.html</link>
+        </item>
+        <item>
+            <title>Corners of the World (Twitter)</title>
+            <link>https://twitter.com/muxfdz/status/1322379153509916678</link>
+        </item>
+        <item>
+            <title>A Love Letter to Games</title>
+            <link>https://blog.kevmo314.com/a-love-letter-to-games.html</link>
+        </item>
+        <item>
+            <title>Insurance: A Market for Risk</title>
+            <link>https://blog.kevmo314.com/insurance-a-market-for-risk.html</link>
+        </item>
+        <item>
+            <title>On the Unreasonable Effectiveness of Finite State Machines</title>
+            <link>https://blog.kevmo314.com/finite-state-machines.html</link>
+        </item>
+        <item>
+            <title>The Entertainment Value Curve: An Incomplete Model</title>
+            <link>https://blog.kevmo314.com/the-entertainment-value-curve.html</link>
+        </item>
+        <item>
+            <title>A Brief History of Zombies at UChicago (Facebook)</title>
+            <link>https://www.facebook.com/notes/kevin-wang/a-brief-history-of-zombies-at-uchicago/10156595334907727/</link>
+        </item>
+    </channel>
+</rss>
