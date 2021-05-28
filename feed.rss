@@ -4,7 +4,7 @@
         <title>Kevin's Blog</title>
         <description>I mean this is a manually written RSS feed did you really expect me to add a description</description>
         <link>https://blog.kevmo314.com/</link>
-        <atom:link href="http://blog.kevmo314.com/feed.rss" rel="self" type="application/rss+xml" />
+        <atom:link href="https://blog.kevmo314.com/feed.rss" rel="self" type="application/rss+xml" />
         <ttl>1800</ttl>
         <item>
             <title>Twitch: Essentially Tinder</title>
