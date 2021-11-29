@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>
+      An Algorithm for Computing RTP Sequence Number Ranges | Kevin's Blog
+    </title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@muxfdz" />
+    <meta
+      name="description"
+      content="RTP packets have a sequence number associated with each packet to indicate the order in which the packets should be arranged. When they are sent over the network, they can often come out-of-order despite being sent in the correct order. On the receiver, some feedback mechanisms require sending information back to the sender to indicate which packets have been received. This requires computing the 'range' of the sequence number seen over a time window."
+    />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>An Algorithm for Computing RTP Sequence Number Ranges</h1>
+    <em>September 29th, 2021</em>
+    <p>
+      <a href="https://en.wikipedia.org/wiki/Real-time_Transport_Protocol"
+        >RTP packets</a
+      >
+      have a sequence number associated with each packet to indicate the order
+      in which the packets should be arranged. When they are sent over the
+      network, they can often come out-of-order despite being sent in the
+      correct order. On the receiver, some feedback mechanisms require sending
+      information back to the sender to indicate which packets have been
+      received. This requires computing the "range" of the sequence number seen
+      over a time window.
+    </p>
+    <p>
+      Unfortunately, this algorithm is not trivial because the sequence number
+      is only 16-bits of information, therefore it will often wrap around. For
+      example, it is easy to see that if the sequence numbers received are
+      <code>[10, 11, 12, 14]</code>, the range is <code>[10, 14]</code>, however
+      when the sequence numbers are <code>[65534, 65535, 0, 1, 2]</code>, it is
+      a little less trivial to find the correct range <code>[65534, 2]</code>,
+      especially when the packets arrive out of order.
+    </p>
+    <h2>Outline</h2>
+    <p>To approach this problem, we observe two facts</p>
+    <ol>
+      <li>
+        The sequence number range is bounded, typically as a constrant of the
+        feedback mechanism. Feedback mechanisms typically do not permit sequence
+        number ranges to exceed, eg 16384, in length. Define this bound as
+        <code>B</code>.
+      </li>
+      <li>
+        Given a bound <code>B</code>, we wish to find the first sequence number
+        <code>seq_0</code> such that <code>seq_i &lt; seq_0 + B</code> for all
+        sequence numbers. Note that addition here is under modulo arithmetic.
+      </li>
+    </ol>
+    <p>
+      Given the second observation, let us define
+      <code>delta_i = seq_i - seq_0</code> under
+      <strong>non-modular</strong> arithmetic. That is, <code>delta_i</code> can
+      be negative.
+    </p>
+    <p>
+      Our algorithm observes that the start of the range is
+      <code>seq_0 + min(delta_i)</code> and the end of the range is
+      <code>seq_0 + max(delta_i)</code> with this addition performed in modular
+      arithmetic.
+    </p>
+    <h2>Implementation</h2>
+    <p>
+      The implementation given the above outline is fairly straightforward. The
+      main trick is in the conversion into a larger unsigned integer space. The
+      algorithm is implemented in Go as follows:
+    </p>
+    <code>
+      <pre>
+minDelta := 0
+maxDelta := 0
+seq0 := seq[0]
+for _, seq := range seqs {
+    if seq - seq0 >= B {
+        delta := int32(seq0) - int32(seq)
+        if delta &lt; minDelta {
+            minDelta = delta
+        }
+    } else {
+        delta := int32(seq) - int32(seq0)
+        if delta > maxDelta {
+            maxDelta = delta
+        }
+    }
+}
+return seq0 + uint16(minDelta), seq0 + uint16(maxDelta)</pre
+      >
+    </code>
+    <p>
+      If unfamiliar, <code>int32()</code> converts a <code>uint16</code> into a
+      signed at-least-32-bits integer.
+    </p>
+    <h2>Rationale</h2>
+    <p>
+      Observe that <code>seq_i = (seq_0 + delta_i) % (2^16)</code>. We also know
+      that <code>min(delta_i) &lt;= delta_i &lt;= max(delta_i)</code>. Therefore
+      it must be true that <code>seq_i</code> falls within the range
+      <code>[seq_0 - min(delta_i), seq_0 + max(delta_i)]</code>.
+    </p>
+    <p>
+      Interestingly, the choice of <code>seq_0</code> here is largely arbitrary.
+      However, it is important that the choice of pivot lies within the sequence
+      range for this algorithm to work. Therefore, an arbitrary sequence number
+      is a natural choice.
+    </p>
+    <p>
+      This algorithm is used at <a href="https://muxable.com/">Muxable</a> to
+      implement sender-side congestion control over RTP flows. Check out the
+      <a href="https://github.com/muxable/rtptools">source code</a> to learn
+      more.
+    </p>
+    <hr />
+    <p>
+      Comment on this post on
+      <a href="https://twitter.com/muxfdz/status/1357049500645396487"
+        >Twitter</a
+      >
+    </p>
+  </body>
+</html>
