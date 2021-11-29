@@ -7,6 +7,11 @@
         <atom:link href="https://blog.kevmo314.com/feed.rss" rel="self" type="application/rss+xml" />
         <ttl>1800</ttl>
         <item>
+            <title>An Algorithm for Computing RTP Sequence Number Ranges</title>
+            <link>https://blog.kevmo314.com/an-algorithm-for-computing-rtp-sequence-number-ranges.html</link>
+            <guid>https://blog.kevmo314.com/an-algorithm-for-computing-rtp-sequence-number-ranges.html</guid>
+        </item>
+        <item>
             <title>Twitch: Essentially Tinder</title>
             <link>https://blog.kevmo314.com/twitch-essentially-tinder.html</link>
             <guid>https://blog.kevmo314.com/twitch-essentially-tinder.html</guid>
