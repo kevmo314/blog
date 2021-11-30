@@ -87,13 +87,12 @@ minDelta := 0
 maxDelta := 0
 seq0 := seq[0]
 for _, seq := range seqs {
+    delta := int32(seq) - int32(seq0)
     if seq - seq0 >= B {
-        delta := int32(seq0) - int32(seq)
         if delta &lt; minDelta {
             minDelta = delta
         }
     } else {
-        delta := int32(seq) - int32(seq0)
         if delta > maxDelta {
             maxDelta = delta
         }
