@@ -85,18 +85,19 @@
       <pre>
 minDelta := 0
 maxDelta := 0
-seq0 := seq[0]
+seq0 := seqs[0]
 for _, seq := range seqs {
-    delta := int32(seq) - int32(seq0)
-    if seq - seq0 >= B {
-        if delta &lt; minDelta {
-            minDelta = delta
-        }
-    } else {
-        if delta > maxDelta {
-            maxDelta = delta
-        }
+  delta := int(seq-seq0)
+  if seq-seq0 >= B {
+    delta -= (1<<16)
+    if delta < minDelta {
+      minDelta = delta
     }
+  } else {
+    if delta > maxDelta {
+      maxDelta = delta
+    }
+  }
 }
 return seq0 + uint16(minDelta), seq0 + uint16(maxDelta)</pre
       >
