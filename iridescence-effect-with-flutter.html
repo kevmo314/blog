@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Iridescence Effect with Flutter | Kevin's Blog</title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@muxfdz" />
+    <meta
+      name="description"
+      content="I found this cool iridescent effect on Twitter."
+    />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>Iridescence Effect with Flutter</h1>
+    <em>June 15th, 2022</em>
+    <p>I found this cool iridescent effect on Twitter.</p>
+    <blockquote class="twitter-tweet">
+      <p lang="en" dir="ltr">
+        First week at the new job ✨ I’m experimenting with using device sensors
+        to change the primary color of the UI based on the angle you hold the
+        phone. It’s hard to capture tho but feels much better in hand.
+        <a
+          href="https://twitter.com/hashtag/protopie?src=hash&amp;ref_src=twsrc%5Etfw"
+          >#protopie</a
+        >
+        <a href="https://t.co/vv0UDLjEPr">pic.twitter.com/vv0UDLjEPr</a>
+      </p>
+      &mdash; Yasir (●ᴗ●) (@yasirbugra)
+      <a
+        href="https://twitter.com/yasirbugra/status/1504220527908564992?ref_src=twsrc%5Etfw"
+        >March 16, 2022</a
+      >
+    </blockquote>
+    <script
+      async
+      src="https://platform.twitter.com/widgets.js"
+      charset="utf-8"
+    ></script>
+    <p>Let's do it with Flutter!</p>
+    <p>
+      Iridescence by definition depends on the angle at which you look at an
+      object. Unfortunately, it's not so easy to determine what angle you're
+      looking at your phone at, but we can emulate the shift in angle that
+      happens when the phone's orientation changes. Monitoring the phone's
+      orientation is enough to create a convincing pseudo-iridescence effect.
+    </p>
+    <p>
+      Conceptually, we want to adjust the hue of the widget based on the angle
+      the device is at.
+    </p>
+    <p>
+      In Flutter, we will use the <code>motion_sensors</code>
+      <a href="https://pub.dev/packages/motion_sensors">package</a>.
+    </p>
+    <pre>$ flutter pub add motion_sensors</pre>
+    <p>
+      The package's <code>motionSensors.absoluteOrientation</code> stream gives
+      us the absolute orientation of the device in terms of pitch, roll, and
+      yaw. The sum of all these three components gives us a hue shifting angle.
+      We convert this to degrees and generate a color that matches that hue with
+      <code>HSLColor</code>.
+    </p>
+    <pre>
+      StreamBuilder&lt;AbsoluteOrientationEvent>(
+        stream: motionSensors.absoluteOrientation,
+        builder: (context, snapshot) {
+          final orientation = snapshot.data;
+          
+          // Calculate the iridescence angle.
+          final deg = orientation == null
+              ? 0
+              : rad2deg(orientation.pitch + orientation.roll + orientation.yaw);
+
+          // Create an HSLColor with that hue.
+          final hsl = HSLColor.fromAHSL(1.0, deg % 360, 1.0, 0.5);
+
+          // Apply this color to the widget.
+          return Center(
+              child: Text(
+            'Shimmer',
+            style: TextStyle(
+                fontSize: 96,
+                fontWeight: FontWeight.bold,
+                color: hsl.toColor()),
+          ));
+        });
+    </pre>
+    <p>And that's it! Here's what it looks like.</p>
+    <video width="640" height="360" muted controls autoplay loop>
+      <source
+        src="/images/iridescence-effect-with-flutter.mp4"
+        type="video/mp4"
+      />
+    </video>
+    <p>
+      For a complete demo, see the
+      <a href="https://github.com/kevmo314/shimmer-demo/blob/main/lib/main.dart"
+        >example repository.</a
+      >
+    </p>
+    <hr />
+  </body>
+</html>
