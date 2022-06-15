@@ -69,50 +69,50 @@
       <code>HSLColor</code>.
     </p>
     <pre>
-      import 'package:motion_sensors/motion_sensors.dart';
+import 'package:motion_sensors/motion_sensors.dart';
 
-      ...
+...
 
-      StreamBuilder&lt;AbsoluteOrientationEvent>(
-        stream: motionSensors.absoluteOrientation,
-        builder: (context, snapshot) {
-          final orientation = snapshot.data;
-          
-          // Calculate the iridescence angle.
-          final deg = orientation == null
-              ? 0
-              : rad2deg(orientation.pitch + orientation.roll + orientation.yaw);
+    StreamBuilder&lt;AbsoluteOrientationEvent>(
+      stream: motionSensors.absoluteOrientation,
+      builder: (context, snapshot) {
+        final orientation = snapshot.data;
+        
+        // Calculate the iridescence angle.
+        final deg = orientation == null
+            ? 0
+            : rad2deg(orientation.pitch + orientation.roll + orientation.yaw);
 
-          // Create an HSLColor with that hue.
-          final hsl = HSLColor.fromAHSL(1.0, deg % 360, 1.0, 0.5);
+        // Create an HSLColor with that hue.
+        final hsl = HSLColor.fromAHSL(1.0, deg % 360, 1.0, 0.5);
 
-          // Apply this color to the widget.
-          return Center(
-              child: Text(
-            'Shimmer',
-            style: TextStyle(
-                fontSize: 96,
-                fontWeight: FontWeight.bold,
-                color: hsl.toColor()),
-          ));
-        });
+        // Apply this color to the widget.
+        return Center(
+            child: Text(
+          'Shimmer',
+          style: TextStyle(
+              fontSize: 96,
+              fontWeight: FontWeight.bold,
+              color: hsl.toColor()),
+        ));
+      });
     </pre>
     <p>
       The last thing we need to do is increase the sampling rate to make the
       effect smoother. In the widget's <code>initState()</code>, add
     </p>
     <pre>
-      import 'package:motion_sensors/motion_sensors.dart';
+import 'package:motion_sensors/motion_sensors.dart';
 
-      ...
+...
       
-      @override
-      void initState() {
-        super.initState();
+  @override
+  void initState() {
+    super.initState();
 
-        motionSensors.absoluteOrientationUpdateInterval =
-            Duration.microsecondsPerSecond ~/ 60;
-      }
+    motionSensors.absoluteOrientationUpdateInterval =
+        Duration.microsecondsPerSecond ~/ 60;
+  }
     </pre>
     <p>
       to sample at 60 frames per second. And that's it! Here's what it looks
