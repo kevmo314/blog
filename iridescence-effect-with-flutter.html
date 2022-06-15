@@ -69,6 +69,10 @@
       <code>HSLColor</code>.
     </p>
     <pre>
+      import 'package:motion_sensors/motion_sensors.dart';
+
+      ...
+
       StreamBuilder&lt;AbsoluteOrientationEvent>(
         stream: motionSensors.absoluteOrientation,
         builder: (context, snapshot) {
@@ -93,7 +97,27 @@
           ));
         });
     </pre>
-    <p>And that's it! Here's what it looks like.</p>
+    <p>
+      The last thing we need to do is increase the sampling rate to make the
+      effect smoother. In the widget's <code>initState()</code>, add
+    </p>
+    <pre>
+      import 'package:motion_sensors/motion_sensors.dart';
+
+      ...
+      
+      @override
+      void initState() {
+        super.initState();
+
+        motionSensors.absoluteOrientationUpdateInterval =
+            Duration.microsecondsPerSecond ~/ 60;
+      }
+    </pre>
+    <p>
+      to sample at 60 frames per second. And that's it! Here's what it looks
+      like.
+    </p>
     <video width="640" height="360" muted controls autoplay loop>
       <source
         src="/images/iridescence-effect-with-flutter.mp4"
