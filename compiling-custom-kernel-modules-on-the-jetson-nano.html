@@ -71,23 +71,25 @@ sudo dpkg -i sdkmanager_1.4.0-7363_amd64.deb</pre
       with the Jetson Nano 2GB looks like
     </p>
     <pre>
-$ sdkmanager --query interactive
-Authenticating with NVIDIA server...
+$ sdkmanager --cli --query interactive
+Waiting for user information from NVIDIA authentication server...
+Retrieving user information...
+Loading and processing available products...
 Login succeeded.
 Loading user information...
 User information loaded successfully.
 Loading server data...
 Server data loaded successfully.
 - select product: Jetson
-- hardware configuration: Host Machine, Target Hardware
-- select target: Jetson Nano Targets
+- hardware configuration: Target Hardware
+- select target: Jetson Nano modules
 - select target operating system: Linux
 - select version: JetPack 4.6.2
 - get detailed options: No
 - flash the target board: No
 
 Launch Command:
-sdkmanager --cli install  --logintype devzone --product Jetson --host --target P3448-0003 --targetos Linux --version 4.5 --flash skip</pre
+sdkmanager --cli install  --logintype devzone --product Jetson --targetos Linux --version 4.6.2 --target JETSON_NANO_TARGETS --flash skip</pre
     >
     <p>
       Run that launch command that it spits out and go through the interactive
