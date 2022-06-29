@@ -80,9 +80,9 @@ Loading server data...
 Server data loaded successfully.
 - select product: Jetson
 - hardware configuration: Host Machine, Target Hardware
-- select target: Jetson Nano [2GB developer kit version]
+- select target: Jetson Nano Targets
 - select target operating system: Linux
-- select version: JetPack 4.5
+- select version: JetPack 4.6.2
 - get detailed options: No
 - flash the target board: No
 
@@ -153,18 +153,18 @@ mkdir -p $TEGRA_KERNEL_OUT</pre
     <p>
       The NVIDIA SDK manager should have created a directory at
       <code
-        >~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra</code
+        >~/nvidia/nvidia_sdk/JetPack_4.6.2_Linux_JETSON_NANO_TARGETS/Linux_for_Tegra</code
       >
       (or similar, depending on your board choice in the second step). Copy over
       the <code>Image</code> and <code>dtb</code> files.
     </p>
     <pre>
-cp $TEGRA_KERNEL_OUT/arch/arm64/boot/Image ~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra/kernel/Image
-cp -r $TEGRA_KERNEL_OUT/arch/arm64/boot/dts/* ~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra/kernel/dtb</pre
+cp $TEGRA_KERNEL_OUT/arch/arm64/boot/Image ~/nvidia/nvidia_sdk/JetPack_4.6.2_Linux_JETSON_NANO_TARGETS/Linux_for_Tegra/kernel/Image
+cp -r $TEGRA_KERNEL_OUT/arch/arm64/boot/dts/* ~/nvidia/nvidia_sdk/JetPack_4.6.2_Linux_JETSON_NANO_TARGETS/Linux_for_Tegra/kernel/dtb</pre
     >
     <p>Then install the modules</p>
     <pre>
-sudo make ARCH=arm64 O=$TEGRA_KERNEL_OUT modules_install INSTALL_MOD_PATH=~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra/rootfs/</pre
+sudo make ARCH=arm64 O=$TEGRA_KERNEL_OUT modules_install INSTALL_MOD_PATH=~/nvidia/nvidia_sdk/JetPack_4.6.2_Linux_JETSON_NANO_TARGETS/Linux_for_Tegra/rootfs/</pre
     >
     <p>
       Lastly, change over to this directory and build the sdcard image. Note
@@ -174,9 +174,9 @@ sudo make ARCH=arm64 O=$TEGRA_KERNEL_OUT modules_install INSTALL_MOD_PATH=~/nvid
       available.
     </p>
     <pre>
-cd ~/nvidia/nvidia_sdk/JetPack_4.5_Linux_JETSON_NANO_2GB_DEVKIT/Linux_for_Tegra/
+cd ~/nvidia/nvidia_sdk/JetPack_4.6.2_Linux_JETSON_NANO_TARGETS/Linux_for_Tegra/
 sudo ./apply_binaries.sh -r rootfs
-sudo ./tools/jetson-disk-image-creator.sh -o sdcard.img -b jetson-nano-2gb-devkit</pre
+sudo ./tools/jetson-disk-image-creator.sh -o sdcard.img -b jetson-nano -r 300</pre
     >
     <h2>7. Flash the SD card and we're done!</h2>
     <p>
