@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>
+      Setting up Workload Identity Federation for GitHub Actions | Kevin's Blog
+    </title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@muxfdz" />
+    <meta name="description" content="I made Twitter faster." />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>Setting up Workload Identity Federation for GitHub Actions</h1>
+    <em>December 26th, 2022</em>
+    <p>
+      If you use the
+      <a href="https://github.com/google-github-actions/auth"
+        ><code>google-github-actions/auth</code> GitHub action</a
+      >, it now recommends you authenticate via
+      <a href="https://cloud.google.com/iam/docs/workload-identity-federation"
+        >Workload Identity Federation</a
+      >. Buzzwords aside, this is a way to authenticate to Google Cloud Platform
+      by trusting that GitHub is GitHub, therefore they can be granted a service
+      account instead of needing a separate JSON key to authenticate the
+      connection.
+    </p>
+    <p>
+      There are
+      <a href="https://www.padok.fr/en/blog/github-action-gcp-identity">some</a>
+      <a
+        href="https://cloud.google.com/blog/products/identity-security/enabling-keyless-authentication-from-github-actions"
+        >guides</a
+      >
+      <a
+        href="https://github.com/google-github-actions/auth#setting-up-workload-identity-federation"
+        >around</a
+      >
+      to set this up but I think it's easier to do it from the cloud console and
+      we can explain what's going on instead of blindly copy/pasting
+      <code>gcloud</code> commands everywhere.
+    </p>
+    <h2>Creating a new workload provider.</h2>
+    <p>
+      Head over to
+      <a
+        href="https://console.cloud.google.com/iam-admin/workload-identity-pools"
+        >Google Cloud</a
+      >
+      and create a new workload provider. Name your identity pool
+      <strong>GitHub</strong> or whatever you'd like. This is meant to represent
+      a given provider.
+    </p>
+    <img src="/images/workload-identity-federation-1.png" />
+    <p>
+      Next, create a new provider with the name <strong>GitHub</strong>, or also
+      whatever you'd like, using OIDC and issuer URL
+      <code>https://token.actions.githubusercontent.com/</code>.
+    </p>
+    <img src="/images/workload-identity-federation-2.png" />
+    <p>
+      Lastly, configure the following provider attributes. These map GitHub's
+      information to Google Cloud, allowing Google Cloud to know who the token
+      is for. The GitHub attributes can be found in
+      <a
+        href="https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect#understanding-the-oidc-token"
+        >OIDC documentation</a
+      >. I'm not sure where the Google Cloud documentation can be found or if
+      the latter three attributes are even necessary. If you know, please let me
+      know too!
+    </p>
+    <img src="/images/workload-identity-federation-3.png" />
+    <p>
+      This step is functionally identical to the <code>gcloud</code> commands
+      documented
+      <a
+        href="https://cloud.google.com/blog/products/identity-security/enabling-keyless-authentication-from-github-actions"
+        >by Google</a
+      >.
+    </p>
+    <h2>Binding a Service Account</h2>
+    <p>
+      Now that we've created a workload pool and provider, we need to bind a
+      service account to the provider. This is the service account that will be
+      used to authenticate to Google Cloud Platform. Click
+      <strong>Grant Access</strong> on the console.
+    </p>
+    <img src="/images/workload-identity-federation-4.png" />
+    <p>
+      Select the service account you'd like to use for your GitHub Action or
+      create a new one.
+    </p>
+    <img src="/images/workload-identity-federation-5.png" />
+    <p>
+      Next, select the provider you created earlier, and for OIDC ID token path,
+      put anything: it doesn't matter.
+    </p>
+    <img src="/images/workload-identity-federation-6.png" />
+    <p>Download the file and it should look something like this</p>
+    <pre>
+{
+  "type": "external_account",
+  "audience": "//iam.googleapis.com/projects/********/locations/global/workloadIdentityPools/github/providers/github",
+  "subject_token_type": "urn:ietf:params:oauth:token-type:jwt",
+  "token_url": "https://sts.googleapis.com/v1/token",
+  "service_account_impersonation_url": "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/github-action-******@********.iam.gserviceaccount.com:generateAccessToken",
+  "credential_source": {
+    "file": "asdfasdf",
+    "format": {
+      "type": "text"
+    }
+  }
+}</pre
+    >
+    <h2>Setting up GitHub Actions</h2>
+    <p>
+      For the last step, set up GitHub Actions to Identity Federation. In your
+      <code>google-github-actions/auth</code> action, copy the
+      <code>workload_identity_provider</code> and
+      <code>service_account</code> from the JSON file's
+      <code>audience</code> and
+      <code>service_account_impersonation_url</code> respectively. Note that
+      they have slightly different formats, so trim as necessary.
+    </p>
+    <pre>
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: 'projects/********/locations/global/workloadIdentityPools/github/providers/github'
+        service_account: 'github-action-******@********.iam.gserviceaccount.com'</pre
+    >
+    <p>
+      And you're done! Your GitHub action should now authenticate correctly.
+    </p>
+    <p>
+      Going back to the
+      <a
+        href="https://github.com/google-github-actions/auth#setting-up-workload-identity-federation"
+        >gcloud-based instructions</a
+      >, now the assorted commands should make more sense. Maybe I'm just a
+      visual learner.
+    </p>
+    <hr />
+    <script
+      src="https://utteranc.es/client.js"
+      repo="kevmo314/blog"
+      issue-term="pathname"
+      theme="github-dark"
+      crossorigin="anonymous"
+      async
+    ></script>
+  </body>
+</html>
