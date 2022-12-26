@@ -7,6 +7,11 @@
         <atom:link href="https://blog.kevmo314.com/feed.rss" rel="self" type="application/rss+xml" />
         <ttl>1800</ttl>
         <item>
+            <title>Faster Twitter Embeds</title>
+            <link>https://blog.kevmo314.com/faster-twitter.html</link>
+            <guid>https://blog.kevmo314.com/faster-twitter.html</guid>
+        </item>
+        <item>
             <title>Freedom</title>
             <link>https://blog.kevmo314.com/freedom.html</link>
             <guid>https://blog.kevmo314.com/freedom.html</guid>
