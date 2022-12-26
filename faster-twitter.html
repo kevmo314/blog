@@ -102,6 +102,16 @@
       <em>do the same thing more efficiently</em>.
     </p>
     <p>
+      First, we'll start up a server that will serve the embed. I'm using a
+      simple Go server. The embed file itself is a static HTML file, which you
+      can view the source for by viewing the source
+      <a
+        href="view-source:https://platform.fastertwitter.com/embed/1606519600874659840"
+        >here</a
+      >. Next, we'll replace <code>widgets.js</code> to replace the static tweet
+      with an iframe.
+    </p>
+    <p>
       With an afternoon of work, I cut it down to ~56kB unpacked! That's a
       whopping <strong>95% reduction</strong>.
     </p>
@@ -128,10 +138,17 @@
       tweet directly too, but it's more code to maintain.
     </p>
     <p>
+      I think it's interesting how many solutions jump to using some completely
+      independent framework to render the tweet. Even looking at Twitter's
+      source, they a lot of compiled CSS and HTML. Is all this really necessary?
+      Maybe they're running a lot of experiments. I don't know. But you can get
+      really far with some manually-written HTML and running gzip on top of it.
+    </p>
+    <p>
       Given how big of an improvement there was here, this honestly makes me
       think it could be possible to rebuild Twitter's frontend, just a lot
       faster. I mean, their API is zippy, why isn't the frontend? If you're
-      interested in this, I'd love to hear from you! The code is coming soon on
+      interested in this, I'd love to hear from you! The code is availabe on
       <a href="https://github.com/kevmo314/faster-twitter">GitHub</a>.
     </p>
     <hr />
