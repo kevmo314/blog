@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Faster Twitter Embeds | Kevin's Blog</title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@muxfdz" />
+    <meta name="description" content="I made Twitter faster." />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>Faster Twitter Embeds</h1>
+    <em>December 25th, 2022</em>
+    <p>I saw another interesting tweet today:</p>
+    <blockquote class="twitter-tweet">
+      <p lang="en" dir="ltr">
+        Blank page with an embedded tweet. How bad can it be?<br /><br />JS:
+        1.5MB 🤯<br />PageSpeed score: 61/100 🤯<br />Time to Interactive: 9 sec
+        🤯<br />TBT: 1.7 sec 🤯<br /><br />What hope does an average site have
+        if a simple tweet requires MegaBytes of JS and seconds to
+        interactivity?<a href="https://t.co/0CJBe6LXCP"
+          >https://t.co/0CJBe6LXCP</a
+        >
+      </p>
+      &mdash; Miško Hevery (Builder.io/Qwik) (@mhevery)
+      <a
+        href="https://twitter.com/mhevery/status/1606438382561026049?ref_src=twsrc%5Etfw"
+        >December 23, 2022</a
+      >
+    </blockquote>
+    <script
+      async
+      src="https://platform.fastertwitter.com/widgets.js"
+      charset="utf-8"
+    ></script>
+    <p>
+      It's true! Although maybe not as bad as the post seems to indicate. The
+      initial load of a tweet is ~460kB of resources transferred resulting in
+      ~1.4MB uncompressed. That's a lot of data for a single tweet. Can we do
+      better?
+    </p>
+    <img src="/images/faster-twitter-1.png" alt="Initial load of a tweet" />
+    <p>
+      Inspecting the Twitter embed code, we see that after the static HTML
+      version of the tweet, a script is injected.
+    </p>
+    <img src="/images/faster-twitter-2.png" alt="Twitter embed script" />
+    <p>
+      This script is responsible for loading the rest of the tweet. There are a
+      few approaches, mostly geared around statically rendering tweets, but I
+      don't really like these. I want to embed tweets independently of what
+      framework I'm using. I mean, this blog is using manually-written HTML
+      hosted on GitHub pages. No plugin is going to help me there!
+    </p>
+    <blockquote class="twitter-tweet">
+      <p lang="en" dir="ltr">
+        This the main reason we built
+        <a href="https://t.co/s4L5iJF5yR">https://t.co/s4L5iJF5yR</a>
+      </p>
+      &mdash; Steven Tey (@steventey)
+      <a
+        href="https://twitter.com/steventey/status/1606817731357343747?ref_src=twsrc%5Etfw"
+        >December 25, 2022</a
+      >
+    </blockquote>
+    <script
+      async
+      src="https://platform.fastertwitter.com/widgets.js"
+      charset="utf-8"
+    ></script>
+    <blockquote class="twitter-tweet">
+      <p lang="en" dir="ltr">
+        I&#39;ve been saying this is a scenario where your framework doesn&#39;t
+        matter. It&#39;s wild, but true. One of the best solutions I&#39;ve seen
+        is done statically by
+        <a href="https://twitter.com/Swizec?ref_src=twsrc%5Etfw">@swizec</a> and
+        Gatsby <a href="https://t.co/ziiaco6ys1">https://t.co/ziiaco6ys1</a>.
+        Othwerwize you&#39;re at the mercy of Twitter&#39;s runtime library. 😥
+      </p>
+      &mdash; Grayson Hicks (@graysonhicks)
+      <a
+        href="https://twitter.com/graysonhicks/status/1606519600874659840?ref_src=twsrc%5Etfw"
+        >December 24, 2022</a
+      >
+    </blockquote>
+    <script
+      async
+      src="https://platform.fastertwitter.com/widgets.js"
+      charset="utf-8"
+    ></script>
+    <p>
+      What if we hijack this script and replace it with our own? As in, build
+      the embed window from scratch. I'll embrace the iframe approach and
+      instead just
+      <em>do the same thing more efficiently</em>.
+    </p>
+    <p>
+      With an afternoon of work, I cut it down to ~56kB unpacked! That's a
+      whopping <strong>95% reduction</strong>.
+    </p>
+    <p>Lighthouse is, of course, much happier.</p>
+    <ul>
+      <li>JS size down 95% from 1.5MB to 56kB</li>
+      <li>PageSpeed score up from 61/100 to 92/100</li>
+      <li>Time to Interactive down from 9 sec to 0.8 sec</li>
+      <li>Total Blocking Time down from 1.7 sec to 0.2 sec</li>
+    </ul>
+    <img src="/images/faster-twitter-3.png" alt="Lighthouse score" />
+    <p>
+      To use the embed, find the <code>platform.twitter.com</code> domain in the
+      embed's <code>&lt;script&gt;</code> tag and replace it with
+      <code>platform.fastertwitter.com</code>. That's it!
+    </p>
+    <p>
+      <strong
+        >But wouldn't it be faster to just embed the full HTML and CSS?</strong
+      >
+      Yeah, that's pretty much what the iframe does. The slowness is not from
+      the iframe, it's from Twitter's HTML/CSS bloat. You could replace the
+      tweet directly too, but it's more code to maintain.
+    </p>
+    <p>
+      Given how big of an improvement there was here, this honestly makes me
+      think it could be possible to rebuild Twitter's frontend, just a lot
+      faster. I mean, their API is zippy, why isn't the frontend? If you're
+      interested in this, I'd love to hear from you! The code is available on
+      <a href="https://github.com/kevmo314/faster-twitter">GitHub</a>.
+    </p>
+    <hr />
+    <p>
+      Comment on this post on
+      <a href="https://twitter.com/muxfdz/status/1317346370014105601"
+        >Twitter</a
+      >
+    </p>
+  </body>
+</html>
