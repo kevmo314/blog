@@ -7,6 +7,11 @@
         <atom:link href="https://blog.kevmo314.com/feed.rss" rel="self" type="application/rss+xml" />
         <ttl>1800</ttl>
         <item>
+            <title>.ucf - Micro Container Format</title>
+            <link>https://blog.kevmo314.com/micro-container-format.html</link>
+            <guid>https://blog.kevmo314.com/micro-container-format.html</guid>
+        </item>
+        <item>
             <title>Empathize, Value, Pivot: Sales Tactics for Engineers</title>
             <link>https://blog.kevmo314.com/empathize-value-pivot.html</link>
             <guid>https://blog.kevmo314.com/empathize-value-pivot.html</guid>

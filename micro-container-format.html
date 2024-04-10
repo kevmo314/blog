@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>.ucf - Micro Container Format | Kevin's Blog</title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@kevmo314" />
+    <meta
+      name="description"
+      content="A tiny multimedia container format for elementary streams."
+    />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>.ucf - Micro Container Format</h1>
+    <em>April 10th, 2024</em>
+    <p>
+      Micro Container Format (file extension <code>.ucf</code>) is a tiny
+      multimedia container format. The file consists of a sequence of packets
+      defined as follows.
+    </p>
+    <h2>Introcution</h2>
+    <p>
+      Existing containers are somewhat heavyweight by being overly prescriptive
+      and I need a very lightweight, easy to seek container for
+      <a href="https://github.com/kevmo314/kineticstreamer">Kinetic Streamer</a
+      >. This specification serves as a very lightweight file format to store
+      elementary streams. It can also be used for transmission, however it is
+      not recommended for that use case.
+    </p>
+    <h2>Payload format</h2>
+    <pre>
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Track ID            |             Flags             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Presentation Timestamp                    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Data Length                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+:                                                               :
+|                             Data                              |
+:                                                               :
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    </pre>
+    <p>
+      The <code>Track ID</code> is a 16-bit unsigned integer that identifies the
+      track, starting at 1. Track 0 MUST NOT be used and is reserved for
+      metadata, such as an in-band SDP.
+    </p>
+    <p>
+      The <code>Flags</code> are a 16-bit unsigned integer that is track or
+      implementation specific. Most commonly, the first bit is set to indicate
+      that the packet is a keyframe, however this is not required.
+    </p>
+    <p>
+      The <code>Presentation Timestamp</code> is a 64-bit unsigned integer that
+      is the presentation timestamp of the packet. Monotonicity of this value is
+      OPTIONAL. The units of this value is implementation specific. A full 64
+      bits is reserved to accommodate nanosecond-level precision if desired. It
+      is RECOMMENDED to use the timestamp provided by the encoder or other video
+      source directly instead of RTP timestamps or similar derivative
+      timestamps.
+    </p>
+    <p>
+      The <code>Data Length</code> is a 32-bit unsigned integer that is the
+      length of the data in bytes.
+    </p>
+    <p>
+      The next <code>Data Length</code> bytes are the actual data. This data is
+      implementation-specific, but it is RECOMMENDED to carry a single
+      elementary stream buffer coming out of an encoder. The length of the data
+      MUST NOT exceed the value of the <code>Data Length</code> field, which is
+      maximally 2^32 - 1 bytes. If a larger payload is desired, the data MUST be
+      split into multiple packets.
+    </p>
+    <h2>Requirements</h2>
+    <p>
+      A given stream consists of a sequence of packets. When storing these files
+      on disk, the first packet MUST be a keyframe of a given track. It is
+      RECOMMENDED that other tracks also start with a keyframe if they cannot be
+      instantaneously decoded.
+    </p>
+    <h2>Recommendations</h2>
+    <p>
+      The file format does not prescribe a particular encoding, however it is
+      recommended to use little-endian byte order for all fields.
+    </p>
+    <hr />
+    <script
+      src="https://utteranc.es/client.js"
+      repo="kevmo314/blog"
+      issue-term="pathname"
+      theme="github-dark"
+      crossorigin="anonymous"
+      async
+    ></script>
+  </body>
+</html>
