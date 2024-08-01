@@ -7,6 +7,11 @@
         <atom:link href="https://blog.kevmo314.com/feed.rss" rel="self" type="application/rss+xml" />
         <ttl>1800</ttl>
         <item>
+            <title>Please stop reinventing JSX</title>
+            <link>https://gist.github.com/kevmo314/7bbf5d5868b973b53898d12b977b15b7</link>
+            <guid>https://gist.github.com/kevmo314/7bbf5d5868b973b53898d12b977b15b7</guid>
+        </item>
+        <item>
             <title>.ucf - Micro Container Format</title>
             <link>https://blog.kevmo314.com/micro-container-format.html</link>
             <guid>https://blog.kevmo314.com/micro-container-format.html</guid>
