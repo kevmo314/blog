@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Rooting the DJI Osmo Action 5 Pro | Kevin's Blog</title>
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css" />
+    <link rel="stylesheet" href="https://unpkg.com/concrete.css" />
+    <link rel="stylesheet" href="/style.css" />
+    <link
+      rel="canonical"
+      href="https://blog.kevmo314.com/rooting-the-dji-osmo-action-5-pro.html"
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@kevmo314" />
+    <meta
+      name="description"
+      content="An English walkthrough of Alliot's Osmo Action 5 Pro root ADB method, with our slot B adaptation, backup procedure, and recovery notes."
+    />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+  <body>
+    <a href="/">Back to the blog</a>
+    <h1>Rooting the DJI Osmo Action 5 Pro</h1>
+    <em>November 4th, 2026</em>
+
+    <p>
+      We rooted a DJI Osmo Action 5 Pro using a Qualcomm engineering cable
+      bought on Taobao. After two small partition changes, connecting the camera
+      over USB gives us a Linux root shell with <code>adb shell</code>. No
+      replacement operating system, modified system image, or borrowed userdata
+      image was needed.
+    </p>
+    <p>
+      Credit for the method goes to Alliot's Chinese-language post,
+      <a
+        href="https://blog.alliot.tech/post/osmo-action5pro-unlock-bootloader-adbd"
+        >OSMO Action5Pro 解锁BL并开启adbd</a
+      >
+      ("Unlocking the Osmo Action 5 Pro bootloader and enabling adbd"). This is
+      an English walkthrough of that procedure, written from our own run on
+      Linux, with an additional complication: Alliot's tested camera used slot
+      A; ours used slot B. We initially stopped there, investigated, and
+      eventually completed the procedure without switching slots.
+    </p>
+    <p>
+      <strong>This writes bootloader-related partitions directly.</strong>
+      Incorrect addresses, incompatible images, or interrupted power can leave
+      the camera unable to boot. Unlocking may erase data or affect warranty
+      coverage. What follows worked on one camera with the versions below; it is
+      not a claim that every Action 5 Pro or firmware revision is compatible.
+    </p>
+
+    <h2>What we tested</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Our camera</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Model</td>
+          <td>Osmo Action 5 Pro, AC204</td>
+        </tr>
+        <tr>
+          <td>Platform</td>
+          <td>Qualcomm QCS8550 / SM8550 family, Kalama</td>
+        </tr>
+        <tr>
+          <td>Firmware version shown in Device Info</td>
+          <td><code>01.06.01.04</code></td>
+        </tr>
+        <tr>
+          <td>Camera firmware version</td>
+          <td><code>10.00.16.13</code></td>
+        </tr>
+        <tr>
+          <td>Active slot</td>
+          <td>B, before and after rooting</td>
+        </tr>
+        <tr>
+          <td>Host</td>
+          <td>Ubuntu Linux</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      The camera firmware version matches Alliot's tested version. The two
+      version fields are different: check both in Settings → Device Info. If the
+      camera is stuck on the USB connected screen, unplug it briefly to reach
+      settings. A blank screen in Qualcomm EDL mode, on the other hand, is
+      expected.
+    </p>
+
+    <h2>What the root method changes</h2>
+    <p>
+      The camera already contains <code>/sbin/adbd</code>, its launch script,
+      USB gadget support, and an enabled <code>adbd.service</code>. Alliot's
+      method makes that existing software accessible by changing two things:
+    </p>
+    <ol>
+      <li>
+        Patch two bytes in this camera's <code>devinfo</code> partition, setting
+        the bootloader's unlocked and critical-unlocked flags.
+      </li>
+      <li>
+        Replace the active slot's ABL, the Android Boot Loader, with a known
+        factory ABL. This lets the camera boot in engineering mode and expose
+        root ADB.
+      </li>
+    </ol>
+    <p>
+      The resulting kernel command line includes
+      <code>mp_state=engineering</code> and
+      <code>androidboot.secure_debug=1</code>. We left <code>system</code>,
+      <code>userdata</code>, GPT, XBL, calibration partitions, and the inactive
+      ABL untouched. In particular, do not flash someone else's userdata image:
+      it can overwrite device-specific settings, credentials, and identity data.
+    </p>
+
+    <h2>The cable</h2>
+    <p>
+      We bought a second-generation Qualcomm 9008 engineering cable on Taobao,
+      with a USB-C connector and an EDL button. The useful Chinese search term
+      is
+      <code>高通二代工程线 9008 Type-C</code>. An ordinary USB-C data cable
+      doesn't provide that button-triggered entry into EDL.
+    </p>
+    <p>
+      For English-speaking readers, there is an
+      <a href="https://www.ebay.com/itm/177204916224"
+        >eBay listing advertised as an EDL 9008 engineering cable v2.0</a
+      >. We have not tested that seller's cable; the tested cable came from
+      Taobao. Check the connector and generation rather than assuming every
+      product labeled "EDL" is equivalent. If you would prefer to buy a cable
+      from us,
+      <a
+        href="mailto:kevmo314@gmail.com?subject=Osmo%20Action%205%20Pro%20EDL%20cable"
+        >email me</a
+      >
+      and we can arrange one.
+    </p>
+
+    <h2>1. Get the tools and verify the images</h2>
+    <p>
+      We used <a href="https://github.com/bkerler/edl">bkerler's EDL client</a>
+      at Alliot's pinned commit. These commands use Bash in a dedicated working
+      directory. On Ubuntu, install Python with venv support, Git, libusb,
+      <code>unzip</code>, ADB, and Fastboot first.
+    </p>
+    <pre><code>set -euo pipefail
+mkdir action5-root
+cd action5-root
+
+python3 -m venv .edl-venv
+git clone https://github.com/bkerler/edl.git edl-tool
+git -C edl-tool checkout 2f8e89a848afaaef68997fcbcb5b178d958d497b
+.edl-venv/bin/pip install ./edl-tool
+
+curl -fL https://github.com/AlliotTech/action-control/releases/download/action5pro-unlock-files.zip/action5pro-unlock-files.zip \
+  -o action5pro-unlock-files.zip
+unzip action5pro-unlock-files.zip
+
+sha256sum loader/RedMagicCommon_8Gen2_devprg img-unlock/abl-factory.img
+wc -c img-unlock/abl-factory.img</code></pre>
+    <p>The expected SHA-256 hashes are:</p>
+    <pre><code>b85fb0e651f88f12e3c9b7b56c0f7229449c410f87fc20c6bc35698516383297  loader/RedMagicCommon_8Gen2_devprg
+658af73f3319af4c07c733fe6ad184f68c299b678819815bbdacbaaff3b12466  img-unlock/abl-factory.img</code></pre>
+    <p>
+      The factory ABL must be exactly <code>1048576</code> bytes. Stop if either
+      hash or the size differs. The loader's RedMagic name looks surprising, but
+      this exact programmer is the one Alliot tested on the shared Qualcomm
+      platform and the one we successfully used. That does not make arbitrary
+      programmers for the same SoC interchangeable.
+    </p>
+    <p>Define a helper without hiding which operations access storage:</p>
+    <pre><code>EDL_PY="$PWD/.edl-venv/bin/python"
+EDL_SCRIPT="$PWD/edl-tool/edl.py"
+LOADER="$PWD/loader/RedMagicCommon_8Gen2_devprg"
+FACTORY_ABL="$PWD/img-unlock/abl-factory.img"
+BACKUP="$PWD/backup-original"
+
+edl() {
+  "$EDL_PY" "$EDL_SCRIPT" "$@" --loader="$LOADER"
+}</code></pre>
+    <p>
+      The client needs permission to access the USB device. On Linux, use
+      suitable udev rules or run it with the required privileges. We also
+      temporarily stopped ModemManager with
+      <code>sudo systemctl stop ModemManager</code> so it would not probe the
+      Qualcomm device, and restarted it when finished. An optional Capstone or
+      Keystone warning from the client is not itself a Firehose connection
+      failure.
+    </p>
+
+    <h2>2. Enter EDL and read the partition table</h2>
+    <ol>
+      <li>
+        Power off the camera and unplug USB. Unmount any camera storage on the
+        host before unplugging.
+      </li>
+      <li>Remove the battery.</li>
+      <li>
+        Hold the engineering cable's button while plugging it into the camera.
+      </li>
+      <li>
+        Confirm that <code>lsusb</code> shows <code>05c6:9008</code>, then
+        release the button.
+      </li>
+      <li>
+        Reinstall the battery before continuing, leaving the cable attached.
+      </li>
+    </ol>
+    <p>
+      The screen stays blank in EDL. Neither ADB nor Fastboot is supposed to see
+      a device in this mode. USB identification is the useful check:
+    </p>
+    <pre><code>lsusb -d 05c6:9008
+edl printgpt --memory=ufs | tee gpt-before.log</code></pre>
+    <p>
+      This uploads the programmer into RAM and reads the GPTs. On our camera,
+      Firehose reported UFS, 4096-byte logical blocks, and six LUNs. Its
+      partition table showed the following locations. The sector numbers are
+      decimal and refer to 4096-byte blocks, not 512-byte sectors.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Partition</th>
+          <th>LUN</th>
+          <th>Start sector</th>
+          <th>Sectors</th>
+          <th>Active</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>devinfo</code></td>
+          <td>4</td>
+          <td>239752</td>
+          <td>1</td>
+          <td>Shared</td>
+        </tr>
+        <tr>
+          <td><code>abl_a</code></td>
+          <td>4</td>
+          <td>66566</td>
+          <td>256</td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td><code>abl_b</code></td>
+          <td>4</td>
+          <td>190279</td>
+          <td>256</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td><code>userdata</code></td>
+          <td>0</td>
+          <td>15214715</td>
+          <td>25472</td>
+          <td>Shared</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong
+        >Those are observations from our device, not universal flash
+        addresses.</strong
+      >
+      Read your own GPT, confirm the model, block size, partition sizes, and
+      active slot, and derive addresses from that. If anything is unexpected,
+      stop and investigate before writing.
+    </p>
+
+    <h2>The slot B roadblock</h2>
+    <p>
+      Alliot explicitly says to stop if slot B is active. We did stop initially:
+      mechanically replacing every "A" with "B" would skip the main question,
+      whether the factory image actually selects and boots slot B correctly.
+      Switching to A merely to match the tutorial could also boot older
+      firmware.
+    </p>
+    <p>
+      We backed up both ABLs and the active system image, decompressed the
+      factory and stock B ABL payloads, and inspected the ARM64 PE code with
+      Capstone. After resolving relocated string addresses, the checked
+      multi-slot detection, active-slot selection, and slot-attribute routines
+      matched. Both images contained the UTF-16 suffix table <code>_a</code>,
+      <code>_b</code>; the selection code inspected GPT active and priority
+      bits, rather than simply forcing A. The boot code also constructed the
+      kernel's slot suffix.
+    </p>
+    <p>
+      That was evidence for an adaptation, not a complete compatibility proof.
+      Combined with the matching camera firmware and fresh, unchanged partition
+      reads, it gave us a basis for a staged test. We retained B, patched only
+      devinfo first, verified a normal boot, and only then replaced
+      <code>abl_b</code>. The successful boot and later Fastboot checks are the
+      on-device evidence. Slot B support here is our additional test result, not
+      something Alliot's original post promised.
+    </p>
+
+    <h2>3. Back up this camera</h2>
+    <p>
+      Save the small partitions and GPT images before touching anything. The
+      following command skips the large data partitions:
+    </p>
+    <pre><code>mkdir -p "$BACKUP"
+edl rl "$BACKUP" --memory=ufs \
+  --skip=system_a,system_b,emulated,userdata,blackbox,blackbox_upgrade,rawdump
+
+test -f "$BACKUP/lun4/devinfo.bin"
+test -f "$BACKUP/lun4/abl_a.bin"
+test -f "$BACKUP/lun4/abl_b.bin"</code></pre>
+    <p>
+      The <code>lun4</code> paths above describe our layout; adjust them only
+      after inspecting your own. We separately read the entire userdata
+      partition and the active <code>system_b</code> image. This was not a full
+      media backup: internal media, the SD card, blackbox data, and the inactive
+      system image were not included. Copy any recordings you care about
+      separately.
+    </p>
+    <p>
+      In the remaining commands, set <code>DEVINFO_LUN</code>,
+      <code>DEVINFO_START</code>, <code>DEVINFO_SECTORS</code>,
+      <code>ABL_LUN</code>, <code>ABL_START</code>, and
+      <code>ABL_SECTORS</code> from your own GPT.
+      <code>ORIGINAL_DEVINFO</code> and <code>ORIGINAL_ABL</code> must point to
+      this camera's original backup files, with the latter matching the active
+      slot. We used the B entry in the table, not the A entry. Likewise, derive
+      the userdata variables before reading it:
+    </p>
+    <pre><code>mkdir -p "$BACKUP/lun$USERDATA_LUN"
+edl rs "$USERDATA_START" "$USERDATA_SECTORS" \
+  "$BACKUP/lun$USERDATA_LUN/userdata.bin" \
+  --memory=ufs --lun="$USERDATA_LUN"
+
+(cd "$BACKUP" &amp;&amp; sha256sum lun*/*.bin &gt; SHA256SUMS)
+(cd "$BACKUP" &amp;&amp; sha256sum -c SHA256SUMS)</code></pre>
+    <p>
+      Check every backup's size against GPT, and verify the hashes again after
+      copying it. We also checked all six primary GPT header and partition-array
+      CRCs. We made a second verified copy in another directory, but both copies
+      were on the same host SSD. That protects against accidentally overwriting
+      one directory, not SSD failure; a separate disk is a better backup target.
+      Keep device-specific backups private.
+    </p>
+
+    <h2>4. Unlock two flags, then test a normal boot</h2>
+    <p>
+      First, read the live devinfo and active ABL again and compare them with
+      their backups. Any unexpected difference needs an explanation before
+      proceeding:
+    </p>
+    <pre><code>edl rs "$DEVINFO_START" "$DEVINFO_SECTORS" devinfo-before.bin \
+  --memory=ufs --lun="$DEVINFO_LUN"
+cmp devinfo-before.bin "$ORIGINAL_DEVINFO"
+
+edl rs "$ABL_START" "$ABL_SECTORS" abl-before.bin \
+  --memory=ufs --lun="$ABL_LUN"
+cmp abl-before.bin "$ORIGINAL_ABL"</code></pre>
+    <p>
+      Generate a patched copy from this camera's devinfo. The expected image is
+      4096 bytes, starts with <code>ANDROID-BOOT!</code>, and has zero at
+      offsets <code>0x10</code> and <code>0x18</code>. Unexpected input means
+      stop, not "patch it anyway."
+    </p>
+    <pre><code>python3 - "$ORIGINAL_DEVINFO" devinfo-unlocked.bin &lt;&lt;'PY'
+from pathlib import Path
+import sys
+
+src, dst = map(Path, sys.argv[1:])
+original = src.read_bytes()
+assert len(original) == 4096
+assert original.startswith(b"ANDROID-BOOT!")
+assert original[0x10] == original[0x18] == 0
+
+patched = bytearray(original)
+patched[0x10] = patched[0x18] = 1
+assert [i for i, (a, b) in enumerate(zip(original, patched)) if a != b] == [0x10, 0x18]
+dst.write_bytes(patched)
+PY
+
+# First persistent write: one devinfo sector, with only two bytes changed.
+edl ws "$DEVINFO_START" devinfo-unlocked.bin --memory=ufs --lun="$DEVINFO_LUN"
+edl rs "$DEVINFO_START" "$DEVINFO_SECTORS" devinfo-after.bin \
+  --memory=ufs --lun="$DEVINFO_LUN"
+cmp devinfo-after.bin devinfo-unlocked.bin
+
+# Only reset after the complete readback matches.
+edl reset --resetmode=reset</code></pre>
+    <p>
+      Our reset command printed a USB input/output error as the camera
+      disconnected. We confirmed that the 9008 device disappeared rather than
+      treating the message alone as a failed write. If it stays in EDL, or the
+      readback fails, investigate before proceeding. If it remains powered off,
+      press the power button. We unplugged USB to leave the connected screen and
+      confirmed that the live view and touch controls still worked. At this
+      stage the ABL is still original; root ADB was not yet available.
+    </p>
+
+    <h2>5. Replace only the active ABL</h2>
+    <p>
+      Repeat the physical EDL entry procedure and reinstall the battery. Re-read
+      GPT and verify that the layout and active slot are unchanged. Read devinfo
+      and the active ABL again: devinfo must match the unlocked image, while ABL
+      must still match the original backup. Recheck the factory ABL's fixed hash
+      and 1 MiB size before writing.
+    </p>
+    <pre><code>edl printgpt --memory=ufs | tee gpt-second-stage.log
+edl rs "$DEVINFO_START" "$DEVINFO_SECTORS" devinfo-second-stage.bin \
+  --memory=ufs --lun="$DEVINFO_LUN"
+cmp devinfo-second-stage.bin devinfo-unlocked.bin
+
+edl rs "$ABL_START" "$ABL_SECTORS" abl-second-stage.bin \
+  --memory=ufs --lun="$ABL_LUN"
+cmp abl-second-stage.bin "$ORIGINAL_ABL"
+
+edl ws "$ABL_START" "$FACTORY_ABL" --memory=ufs --lun="$ABL_LUN"
+edl rs "$ABL_START" "$ABL_SECTORS" abl-after.bin \
+  --memory=ufs --lun="$ABL_LUN"
+cmp abl-after.bin "$FACTORY_ABL"
+sha256sum abl-after.bin "$FACTORY_ABL"
+
+# Again, only after a byte-for-byte match:
+edl reset --resetmode=reset</code></pre>
+    <p>
+      In our run, this wrote only <code>abl_b</code>, at its freshly verified
+      location. We did not switch slots or write both ABLs. Every write was
+      followed by a full readback, not just a success message from the tool.
+    </p>
+
+    <h2>6. Verify root and persistence</h2>
+    <p>
+      Power on if needed and connect USB without holding the engineering button.
+      The camera may still show its connected screen. That does not tell you
+      whether ADB is available; check from the host:
+    </p>
+    <pre><code>adb devices -l
+adb shell id
+adb shell cat /proc/cmdline
+adb shell systemctl is-enabled adbd.service
+adb shell systemctl is-active adbd.service</code></pre>
+    <p>Our relevant results were:</p>
+    <pre><code>uid=0(root) gid=0(root) ...
+mp_state=engineering
+androidboot.secure_debug=1
+systemd.setenv="SLOT_SUFFIX=_b"
+enabled
+active</code></pre>
+    <p>
+      USB re-enumerated during startup; one early ADB command reported that the
+      device was missing before the next attempt succeeded. Allow it to settle
+      rather than treating a single transient disconnect as a reason to reflash.
+      If ADB stays unavailable, check the host's USB permissions and the actual
+      boot state. Do not try to fix it by flashing someone else's userdata.
+    </p>
+    <p>Then check the bootloader itself and return to the normal system:</p>
+    <pre><code>adb reboot bootloader
+fastboot devices
+fastboot getvar unlocked
+fastboot getvar current-slot
+fastboot getvar product
+
+# Our output:
+# unlocked: yes
+# current-slot: b
+# product: kalama
+
+fastboot reboot
+adb wait-for-device
+adb shell id</code></pre>
+    <p>
+      Root ADB returned automatically after that reboot. We also verified that
+      the data and media storage mounted, and checked the normal live view and
+      touch controls after unplugging USB. The camera displayed a
+      <code>FactoryMode</code> overlay, which we left in place. We did not
+      establish full recording/playback, thermal, battery-life, or long-term
+      stability equivalence with stock firmware; "we got root" is a narrower
+      result.
+    </p>
+
+    <h2>Recovery and everyday use</h2>
+    <p>
+      Alliot's rollback path is to re-enter EDL, re-read GPT, restore this
+      camera's original active ABL, verify its full readback, then restore the
+      original devinfo and verify that too. Reset only after both comparisons
+      pass. The commands use the same device-specific addresses as before,
+      revalidated against the current GPT:
+    </p>
+    <pre><code>edl ws "$ABL_START" "$ORIGINAL_ABL" --memory=ufs --lun="$ABL_LUN"
+edl rs "$ABL_START" "$ABL_SECTORS" abl-restored.bin \
+  --memory=ufs --lun="$ABL_LUN"
+cmp abl-restored.bin "$ORIGINAL_ABL"
+
+edl ws "$DEVINFO_START" "$ORIGINAL_DEVINFO" --memory=ufs --lun="$DEVINFO_LUN"
+edl rs "$DEVINFO_START" "$DEVINFO_SECTORS" devinfo-restored.bin \
+  --memory=ufs --lun="$DEVINFO_LUN"
+cmp devinfo-restored.bin "$ORIGINAL_DEVINFO"
+edl reset --resetmode=reset</code></pre>
+    <p>
+      We prepared the original images for recovery but did not exercise rollback
+      after the successful root. Keep them, the verified loader, and the
+      engineering cable. EDL recovery still depends on being able to enter EDL
+      and communicate reliably with storage.
+    </p>
+    <p>
+      For normal use, simply connect USB and run <code>adb shell</code>. Root
+      ADB now starts automatically, so only attach the camera to trusted hosts.
+      Alliot notes that an OTA can replace the factory ABL and remove ADB;
+      re-check the firmware, GPT, and active slot after an update rather than
+      repeating old flash commands blindly.
+    </p>
+    <p>
+      The useful result here is a root shell while retaining the camera's
+      existing system and userdata. Alliot supplied the method and verified
+      binary hashes; our contribution was working through the English/Linux
+      procedure and testing an active-slot-B camera with staged writes and
+      readback checks.
+    </p>
+    <p>
+      References:
+      <a
+        href="https://blog.alliot.tech/post/osmo-action5pro-unlock-bootloader-adbd"
+        >Alliot's original Chinese walkthrough</a
+      >
+      (published under
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
+        >CC BY-NC-SA 4.0</a
+      >),
+      <a
+        href="https://github.com/bkerler/edl/tree/2f8e89a848afaaef68997fcbcb5b178d958d497b"
+        >the pinned EDL client</a
+      >, and
+      <a href="https://github.com/AlliotTech/action-control"
+        >Alliot's Action Control project</a
+      >, which provides a possible use for root access but was not installed as
+      part of this procedure.
+    </p>
+    <hr />
+    <p>
+      <script
+        src="https://utteranc.es/client.js"
+        repo="kevmo314/blog"
+        issue-term="pathname"
+        theme="github-dark"
+        crossorigin="anonymous"
+        async
+      ></script>
+    </p>
+  </body>
+</html>
